@@ -1,0 +1,420 @@
+{
+  "info": {
+    "name": "Job Portal API",
+    "description": "Complete API collection for Job Portal Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/job-portal-backend",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Job Seeker",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jobseeker@test.com\",\n  \"password\": \"password123\",\n  \"full_name\": \"John Doe\",\n  \"role\": \"job_seeker\",\n  \"phone\": \"1234567890\",\n  \"skills\": \"PHP, JavaScript, PostgreSQL\",\n  \"experience_years\": 3,\n  \"education\": \"Bachelor in Computer Science\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register.php",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register.php"]
+            }
+          }
+        },
+        {
+          "name": "Register Employer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"employer@test.com\",\n  \"password\": \"password123\",\n  \"full_name\": \"Jane Smith\",\n  \"role\": \"employer\",\n  \"phone\": \"0987654321\",\n  \"company_name\": \"Tech Solutions Inc\",\n  \"company_website\": \"https://techsolutions.com\",\n  \"company_description\": \"Leading technology company\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register.php",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register.php"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"employer@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login.php",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login.php"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/logout.php",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout.php"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "Get All Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/jobs/fetch_jobs.php?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "fetch_jobs.php"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "developer",
+                  "disabled": true
+                },
+                {
+                  "key": "job_type",
+                  "value": "full_time",
+                  "disabled": true
+                },
+                {
+                  "key": "location",
+                  "value": "New York",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/jobs/fetch_jobs.php?search=developer&job_type=full_time&location=New York",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "fetch_jobs.php"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "developer"
+                },
+                {
+                  "key": "job_type",
+                  "value": "full_time"
+                },
+                {
+                  "key": "location",
+                  "value": "New York"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Job Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/jobs/job_details.php?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "job_details.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior PHP Developer\",\n  \"description\": \"We are looking for an experienced PHP developer...\",\n  \"requirements\": \"5+ years of PHP experience, PostgreSQL knowledge\",\n  \"responsibilities\": \"Lead development team, code reviews\",\n  \"job_type\": \"full_time\",\n  \"location\": \"New York, NY\",\n  \"salary_min\": 80000,\n  \"salary_max\": 120000,\n  \"salary_currency\": \"USD\",\n  \"experience_required\": 5,\n  \"education_required\": \"Bachelor's degree in CS\",\n  \"skills_required\": [\"PHP\", \"PostgreSQL\", \"JavaScript\"],\n  \"application_deadline\": \"2026-03-31\",\n  \"positions_available\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs/create_job.php",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "create_job.php"]
+            }
+          }
+        },
+        {
+          "name": "Update Job",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"title\": \"Senior PHP Developer (Updated)\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs/update_job.php",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "update_job.php"]
+            }
+          }
+        },
+        {
+          "name": "Delete Job",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/jobs/delete_job.php?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "delete_job.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "Apply to Job",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "job_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "cover_letter",
+                  "value": "I am very interested in this position...",
+                  "type": "text"
+                },
+                {
+                  "key": "resume",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/applications/apply.php",
+              "host": ["{{base_url}}"],
+              "path": ["applications", "apply.php"]
+            }
+          }
+        },
+        {
+          "name": "Get My Applications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/applications/my_applications.php?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["applications", "my_applications.php"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Application Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"application_id\": 1,\n  \"status\": \"shortlisted\",\n  \"notes\": \"Good candidate for interview\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/applications/update_status.php",
+              "host": ["{{base_url}}"],
+              "path": ["applications", "update_status.php"]
+            }
+          }
+        },
+        {
+          "name": "Withdraw Application",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/applications/withdraw.php?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["applications", "withdraw.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/users/profile.php",
+              "host": ["{{base_url}}"],
+              "path": ["users", "profile.php"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "full_name",
+                  "value": "John Doe Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "9876543210",
+                  "type": "text"
+                },
+                {
+                  "key": "skills",
+                  "value": "PHP, JavaScript, PostgreSQL, React",
+                  "type": "text"
+                },
+                {
+                  "key": "experience_years",
+                  "value": "5",
+                  "type": "text"
+                },
+                {
+                  "key": "resume",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "profile_picture",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/users/update_profile.php",
+              "host": ["{{base_url}}"],
+              "path": ["users", "update_profile.php"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"password123\",\n  \"new_password\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/change_password.php",
+              "host": ["{{base_url}}"],
+              "path": ["users", "change_password.php"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

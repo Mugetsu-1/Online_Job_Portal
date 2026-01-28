@@ -1,0 +1,79 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Upload directories
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Composer
+/vendor/
+composer.lock
+
+# NPM (if using any frontend build tools)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+
+# Database backups
+*.sql.backup
+*.dump
+
+# PHP
+.phpunit.result.cache
+
+# Session files
+sessions/
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# Sensitive files
+config/secrets.php
+private_keys/
+certificates/
+
+# Documentation build
+docs/_build/
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
