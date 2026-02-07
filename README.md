@@ -1,370 +1,161 @@
-# Job Portal Backend - PostgreSQL + PHP
+# Online Job Portal
 
-A complete REST API backend for a job portal application using PHP and PostgreSQL.
+**Web Technology Project — Semester 5**
 
-## Features
+A simple online job portal built as a semester project. Job seekers can browse jobs and apply; employers can post jobs and manage applications. The project follows CRUD principles and uses HTML, CSS, vanilla JavaScript on the frontend and PHP with PostgreSQL on the backend.
 
-- ✅ User Authentication (Login/Register/Logout)
-- ✅ Role-based Access Control (Job Seeker, Employer, Admin)
-- ✅ Job Management (CRUD operations)
-- ✅ Advanced Job Search & Filtering
-- ✅ Job Application System
-- ✅ User Profile Management
-- ✅ File Upload (Resume, Profile Pictures, Company Logos)
-- ✅ Application Status Tracking
-- ✅ Statistics & Analytics
+---
+
+## Project Overview
+
+- **Frontend:** HTML, CSS (Bootstrap allowed), Vanilla JavaScript (no framework; jQuery accepted)
+- **Backend:** PHP (REST-style API)
+- **Database:** PostgreSQL
+- **Concepts:** CRUD, role-based access (Job Seeker, Employer, Admin), sessions, file uploads
+
+---
+
+## Project Structure
+
+```
+OnlineWebPortal/
+├── frontend/          # HTML pages (index, login, register, jobs, dashboard, profile, apply)
+├── assets/            # CSS, JS, Bootstrap, jQuery
+├── backend/           # PHP API (wire your frontend to this folder)
+│   ├── config/        # Database configuration (db.php)
+│   ├── auth/          # login.php, register.php, logout.php
+│   ├── jobs/          # fetch_jobs.php, job_details.php, create_job.php, update_job.php, delete_job.php
+│   ├── applications/  # apply.php, my_applications.php, update_status.php, withdraw.php
+│   ├── users/         # profile.php, update_profile.php, change_password.php
+│   └── seed.php       # One-time: set sample user passwords to 1234
+├── database/          # job_portal.sql (schema), utilities.sql
+├── uploads/           # resumes, profiles, logos (create if using file uploads)
+├── README.md
+└── LICENSE
+```
+
+---
 
 ## Technology Stack
 
-- **Backend**: PHP 7.4+
-- **Database**: PostgreSQL 12+
-- **Web Server**: Apache (with mod_rewrite)
+| Layer    | Technology                          |
+|----------|-------------------------------------|
+| Frontend | HTML5, CSS3, Bootstrap, Vanilla JS  |
+| Backend  | PHP 7.4+                            |
+| Database | PostgreSQL 12+                     |
+| Server   | Apache (or PHP built-in for local)  |
 
-## Installation
+---
+
+## Features
+
+- User registration and login (Job Seeker / Employer)
+- Role-based access: Job Seeker, Employer, Admin
+- Job listing with search and filters (job type, location, salary, experience)
+- Job details, create, update, delete (employer/admin)
+- Apply to jobs (job seeker), upload resume
+- View and manage applications (job seeker: my applications; employer: applications to their jobs)
+- Update application status (employer): pending, reviewed, shortlisted, rejected, accepted
+- User profile and update profile (including resume, profile picture, company logo)
+- Change password
+
+---
+
+## Setup
 
 ### 1. Prerequisites
 
-```bash
-# Install PostgreSQL
-sudo apt-get install postgresql postgresql-contrib
+- PHP 7.4+ with extensions: `pdo_pgsql`, `mbstring`, `json`
+- PostgreSQL 12+
+- Web server (e.g. Apache) or PHP built-in server
 
-# Install PHP and required extensions
-sudo apt-get install php php-pgsql php-mbstring php-json
-```
-
-### 2. Database Setup
+### 2. Database
 
 ```bash
-# Login to PostgreSQL
+# Create database and user (PostgreSQL)
 sudo -u postgres psql
 
-# Create database and user
 CREATE DATABASE job_portal;
-CREATE USER job_portal_user WITH PASSWORD 'your_secure_password';
+CREATE USER job_portal_user WITH PASSWORD '1234';
 GRANT ALL PRIVILEGES ON DATABASE job_portal TO job_portal_user;
-
-# Exit PostgreSQL
 \q
 
 # Import schema
 psql -U job_portal_user -d job_portal -f database/job_portal.sql
 ```
 
-### 3. Configure Database Connection
+### 3. Backend configuration
 
-Edit `config/db.php` and update the database credentials:
+Edit `backend/config/db.php` and set:
 
-```php
-define('DB_HOST', 'localhost');
-define('DB_PORT', '5432');
-define('DB_NAME', 'job_portal');
-define('DB_USER', 'job_portal_user');
-define('DB_PASSWORD', 'your_secure_password');
-```
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (e.g. password `1234` as above)
 
-### 4. Set Up File Permissions
+### 4. Sample user passwords
 
-```bash
-# Create upload directories
-mkdir -p uploads/{resumes,profiles,logos}
+After importing the schema, run once (in browser or via PHP CLI):
 
-# Set proper permissions
-chmod -R 755 uploads/
-chown -R www-data:www-data uploads/
-```
+- **URL:** `http://your-base-url/backend/seed.php`
 
-### 5. Configure Apache
+This sets the password for all sample users to **1234**.
 
-```apache
-<VirtualHost *:80>
-    ServerName jobportal.local
-    DocumentRoot /var/www/job-portal-backend
-    
-    <Directory /var/www/job-portal-backend>
-        Options -Indexes +FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-    
-    ErrorLog ${APACHE_LOG_DIR}/job-portal-error.log
-    CustomLog ${APACHE_LOG_DIR}/job-portal-access.log combined
-</VirtualHost>
-```
+### 5. Upload folders (optional)
+
+If you use file uploads (resume, profile picture, company logo), create:
 
 ```bash
-# Enable required modules
-sudo a2enmod rewrite headers
-sudo systemctl restart apache2
+mkdir -p uploads/resumes uploads/profiles uploads/logos
+chmod -R 755 uploads
 ```
 
-## API Endpoints
+### 6. Run the project
 
-### Authentication
+- **Option A:** Point your web server document root to the project folder (serve both `frontend/` and `backend/`).
+- **Option B (local):**  
+  - Backend: `php -S localhost:8000 -t backend` (API at `http://localhost:8000/`)  
+  - Frontend: open `frontend/index.html` or serve via another port.
 
-#### Register User
-```
-POST /auth/register.php
-Content-Type: application/json
+Wire the frontend to the API base URL (e.g. `http://localhost:8000/` or `http://localhost/OnlineWebPortal/backend/`).
 
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "full_name": "John Doe",
-  "role": "job_seeker",  // or "employer"
-  "phone": "1234567890",
-  
-  // For job_seeker
-  "skills": "PHP, JavaScript, PostgreSQL",
-  "experience_years": 3,
-  "education": "Bachelor in CS",
-  
-  // For employer
-  "company_name": "Tech Corp",
-  "company_website": "https://techcorp.com"
-}
-```
+---
 
-#### Login
-```
-POST /auth/login.php
-Content-Type: application/json
+## API Base URL
 
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
+All API endpoints live under the **`backend/`** folder. Use this as the base URL when wiring the frontend.
 
-#### Logout
-```
-POST /auth/logout.php
-```
+| Area         | Endpoints (relative to backend/) |
+|-------------|-----------------------------------|
+| Auth        | `auth/login.php`, `auth/register.php`, `auth/logout.php` |
+| Jobs        | `jobs/fetch_jobs.php`, `jobs/job_details.php`, `jobs/create_job.php`, `jobs/update_job.php`, `jobs/delete_job.php` |
+| Applications| `applications/apply.php`, `applications/my_applications.php`, `applications/update_status.php`, `applications/withdraw.php` |
+| User        | `users/profile.php`, `users/update_profile.php`, `users/change_password.php` |
 
-### Jobs
+Requests: use **JSON** for login, register, create/update job, update application status, change password; **multipart/form-data** for apply (with optional resume) and update profile (with optional files). Responses are JSON with `success`, `message`, and optional `data`.
 
-#### Get All Jobs (with search & filters)
-```
-GET /jobs/fetch_jobs.php?search=developer&job_type=full_time&location=New%20York&page=1&limit=10
-```
+---
 
-Query Parameters:
-- `search`: Full-text search on title and description
-- `job_type`: full_time, part_time, contract, internship, remote
-- `location`: Filter by location
-- `min_salary`: Minimum salary filter
-- `max_salary`: Maximum salary filter
-- `experience`: Maximum experience required
-- `page`: Page number (default: 1)
-- `limit`: Results per page (default: 10, max: 50)
+## Sample Users (Password: 1234)
 
-#### Get Job Details
-```
-GET /jobs/job_details.php?id=1
-```
+After running `backend/seed.php`:
 
-#### Create Job (Employer only)
-```
-POST /jobs/create_job.php
-Content-Type: application/json
+| Role       | Email                  |
+|-----------|-------------------------|
+| Job Seeker| jobseeker@example.com  |
+| Employer  | employer@example.com   |
+| Admin     | admin@example.com      |
 
-{
-  "title": "Senior PHP Developer",
-  "description": "We are looking for...",
-  "requirements": "5+ years experience...",
-  "responsibilities": "Lead development team...",
-  "job_type": "full_time",
-  "location": "New York, NY",
-  "salary_min": 80000,
-  "salary_max": 120000,
-  "salary_currency": "USD",
-  "experience_required": 5,
-  "education_required": "Bachelor's degree",
-  "skills_required": ["PHP", "PostgreSQL", "JavaScript"],
-  "application_deadline": "2026-03-31",
-  "positions_available": 2
-}
-```
+---
 
-#### Update Job (Employer only)
-```
-PUT /jobs/update_job.php
-Content-Type: application/json
+## File limits
 
-{
-  "id": 1,
-  "title": "Updated Title",
-  "is_active": false
-}
-```
+- Resume: 5 MB (PDF, DOC, DOCX)
+- Images (profile/logo): 2 MB (JPG, PNG, GIF)
 
-#### Delete Job (Employer/Admin only)
-```
-DELETE /jobs/delete_job.php?id=1
-```
-
-### Applications
-
-#### Apply to Job (Job Seeker only)
-```
-POST /applications/apply.php
-Content-Type: multipart/form-data
-
-job_id: 1
-cover_letter: "I am interested in..."
-resume: [file upload]
-```
-
-#### Get My Applications
-```
-GET /applications/my_applications.php?status=pending&page=1&limit=10
-```
-
-For Job Seekers: Returns their applications
-For Employers: Returns applications to their jobs
-
-#### Update Application Status (Employer only)
-```
-PUT /applications/update_status.php
-Content-Type: application/json
-
-{
-  "application_id": 1,
-  "status": "shortlisted",  // pending, reviewed, shortlisted, rejected, accepted
-  "notes": "Good candidate for interview"
-}
-```
-
-#### Withdraw Application (Job Seeker only)
-```
-DELETE /applications/withdraw.php?id=1
-```
-
-### User Profile
-
-#### Get Profile
-```
-GET /users/profile.php
-```
-
-#### Update Profile
-```
-POST /users/update_profile.php
-Content-Type: multipart/form-data
-
-full_name: "John Doe"
-phone: "1234567890"
-skills: "PHP, JavaScript"
-experience_years: 5
-resume: [file upload]
-profile_picture: [file upload]
-```
-
-#### Change Password
-```
-PUT /users/change_password.php
-Content-Type: application/json
-
-{
-  "current_password": "oldpassword",
-  "new_password": "newpassword123"
-}
-```
-
-## Database Schema
-
-### Users Table
-- Stores user information for job seekers, employers, and admins
-- Separate fields for job seeker and employer data
-- Email verification and account status tracking
-
-### Jobs Table
-- Job postings created by employers
-- Full-text search support
-- View and application counters
-- Automatic timestamp updates
-
-### Applications Table
-- Links job seekers to jobs
-- Tracks application status
-- Prevents duplicate applications
-- Employer notes support
-
-## Security Features
-
-- Password hashing using bcrypt
-- SQL injection prevention using prepared statements
-- File upload validation
-- Session management
-- Role-based access control
-- CORS configuration
-
-## File Upload Limits
-
-- Resume files: 5MB (PDF, DOC, DOCX)
-- Images: 2MB (JPG, PNG, GIF)
-
-## Error Handling
-
-All endpoints return JSON responses with the following structure:
-
-Success:
-```json
-{
-  "success": true,
-  "message": "Operation successful",
-  "data": { ... }
-}
-```
-
-Error:
-```json
-{
-  "success": false,
-  "message": "Error description"
-}
-```
-
-## Development
-
-### Sample Users (Password: "password123")
-
-- **Job Seeker**: jobseeker@example.com
-- **Employer**: employer@example.com
-- **Admin**: admin@example.com
-
-### Testing
-
-Use tools like Postman or curl to test the API endpoints:
-
-```bash
-# Example: Login
-curl -X POST http://localhost/job-portal-backend/auth/login.php \
-  -H "Content-Type: application/json" \
-  -d '{"email":"employer@example.com","password":"password123"}'
-
-# Example: Get jobs
-curl http://localhost/job-portal-backend/jobs/fetch_jobs.php?search=developer
-```
-
-## Production Deployment
-
-1. **Disable error reporting** in `config/db.php`:
-```php
-error_reporting(0);
-ini_set('display_errors', 0);
-```
-
-2. **Update CORS settings** to allow only your frontend domain
-3. **Use HTTPS** for all communications
-4. **Set up regular database backups**
-5. **Implement rate limiting**
-6. **Set up log rotation**
-7. **Configure firewall rules**
+---
 
 ## License
 
-MIT License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for the full text.
 
-## Support
+---
 
-For issues and questions, please create an issue in the repository.
+**Semester 5 — Web Technology**
