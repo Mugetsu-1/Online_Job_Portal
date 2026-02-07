@@ -1,48 +1,35 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 
-header('Content-Type: application/json');
-
 try {
-    // Get POST data
     $data = json_decode(file_get_contents('php://input'), true);
-    
+
     if (!isset($data['email']) || !isset($data['password'])) {
         throw new Exception("Email and password are required");
     }
-    
+
     $db = getDB();
-    
-    // Get user by email
-    $stmt = $db->prepare("
-        SELECT id, email, password_hash, role, full_name, is_active, 
-               company_name, profile_picture, company_logo
-        FROM users 
-        WHERE email = ?
-    ");
+    $stmt = $db->prepare("SELECT id, email, password_hash, role, full_name, is_active, company_name, profile_picture, company_logo FROM users WHERE email = ?");
     $stmt->execute([$data['email']]);
     $user = $stmt->fetch();
-    
+
     if (!$user) {
         throw new Exception("Invalid email or password");
     }
-    
-    // Verify password
+
     if (!password_verify($data['password'], $user['password_hash'])) {
         throw new Exception("Invalid email or password");
     }
-    
-    // Check if account is active
+
     if (!$user['is_active']) {
         throw new Exception("Account is deactivated. Please contact support.");
     }
-    
-    // Create session
+
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['email'] = $user['email'];
     $_SESSION['role'] = $user['role'];
     $_SESSION['full_name'] = $user['full_name'];
-    
+
     $response = [
         'success' => true,
         'message' => 'Login successful',
@@ -54,15 +41,14 @@ try {
             'profile_picture' => $user['profile_picture']
         ]
     ];
-    
-    // Add role-specific data
+
     if ($user['role'] === 'employer') {
         $response['user']['company_name'] = $user['company_name'];
         $response['user']['company_logo'] = $user['company_logo'];
     }
-    
+
     echo json_encode($response);
-    
+
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode([

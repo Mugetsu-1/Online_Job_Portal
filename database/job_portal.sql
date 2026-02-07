@@ -174,4 +174,4 @@ INSERT INTO users (email, password_hash, role, full_name, phone, company_name, c
 INSERT INTO users (email, password_hash, role, full_name, phone, skills, experience_years, education) VALUES
 ('jobseeker@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'job_seeker', 'John Doe', '5555555555', 'PHP, JavaScript, PostgreSQL', 3, 'Bachelor in Computer Science');
 
--- Note: Password for all sample users is 'password123'
+-- Run backend/seed.php once to set sample user password to 1234
