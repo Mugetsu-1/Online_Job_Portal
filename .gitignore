@@ -69,7 +69,6 @@ sessions/
 config/secrets.php
 private_keys/
 certificates/
-backend/config/db.php
 
 # Documentation build
 docs/_build/
