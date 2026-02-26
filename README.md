@@ -1,6 +1,6 @@
 # Online Job Portal
 
-Semester 5 web technology project with:
+Semester 5th web technology project with:
 - Frontend: HTML, CSS, Bootstrap, vanilla JS
 - Backend: PHP REST-style endpoints
 - Database: PostgreSQL
