@@ -2,10 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 
 try {
-    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employer') {
-        http_response_code(403);
-        throw new Exception("Only employers can update jobs");
-    }
+    requireAuth(['employer']);
 
     $data = json_decode(file_get_contents('php://input'), true);
 
@@ -63,6 +60,7 @@ try {
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
     $result = $stmt->fetch();
+    auditLog('job.updated', 'job', $data['id'], ['fields' => $update_fields]);
 
     echo json_encode([
         'success' => true,

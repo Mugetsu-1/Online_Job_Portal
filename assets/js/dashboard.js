@@ -17,16 +17,28 @@
 
       host.querySelectorAll('[data-delete-job]').forEach(function (btn) {
         btn.addEventListener('click', function () {
+          if (!confirm('Delete this job permanently?')) return;
           var id = btn.getAttribute('data-delete-job');
+          var row = btn.closest('.row-card');
+          if (row) row.remove();
           JobPortalAPI.deleteJob(id)
             .then(function () {
               loadEmployerJobs();
             })
             .catch(function (err) {
               JobPortalCommon.showAlert('#dashboardAlert', err.message || 'Delete failed', 'danger');
+              loadEmployerJobs();
             });
         });
       });
+    }).catch(function (err) {
+      JobPortalCommon.showAlert('#dashboardAlert', (err.message || 'Unable to load jobs') + ' ', 'danger');
+      var alertBox = document.querySelector('#dashboardAlert .alert');
+      if (alertBox) {
+        alertBox.innerHTML += '<button type="button" id="retryJobsPanelLoad" class="btn btn-sm btn-light ms-2">Retry</button>';
+        var retryBtn = document.getElementById('retryJobsPanelLoad');
+        if (retryBtn) retryBtn.addEventListener('click', loadEmployerJobs);
+      }
     });
   }
 
@@ -53,12 +65,16 @@
 
         host.querySelectorAll('[data-withdraw]').forEach(function (btn) {
           btn.addEventListener('click', function () {
+            if (!confirm('Withdraw this application?')) return;
+            var row = btn.closest('.row-card');
+            if (row) row.remove();
             JobPortalAPI.withdrawApplication(btn.getAttribute('data-withdraw'))
               .then(function () {
                 loadApplications();
               })
               .catch(function (err) {
                 JobPortalCommon.showAlert('#dashboardAlert', err.message || 'Withdraw failed', 'danger');
+                loadApplications();
               });
           });
         });
@@ -67,6 +83,10 @@
           var current = apps.find(function (a) { return String(a.id) === select.getAttribute('data-status'); });
           if (current) select.value = current.status;
           select.addEventListener('change', function () {
+            if (!confirm('Change application status to "' + select.value + '"?')) {
+              if (current) select.value = current.status;
+              return;
+            }
             JobPortalAPI.updateApplicationStatus({
               application_id: Number(select.getAttribute('data-status')),
               status: select.value
@@ -79,15 +99,23 @@
         });
       })
       .catch(function (err) {
-        JobPortalCommon.showAlert('#dashboardAlert', err.message || 'Unable to load applications', 'danger');
+        JobPortalCommon.showAlert('#dashboardAlert', (err.message || 'Unable to load applications') + ' ', 'danger');
+        var alertBox = document.querySelector('#dashboardAlert .alert');
+        if (alertBox) {
+          alertBox.innerHTML += '<button type="button" id="retryAppsLoad" class="btn btn-sm btn-light ms-2">Retry</button>';
+          var retryBtn = document.getElementById('retryAppsLoad');
+          if (retryBtn) retryBtn.addEventListener('click', loadApplications);
+        }
       });
   }
 
   function initCreateJob() {
     var form = document.getElementById('createJobForm');
     if (!form) return;
+    var submitting = false;
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (submitting) return;
       JobPortalCommon.clearAlert('#dashboardAlert');
       var payload = {
         title: form.title.value.trim(),
@@ -105,6 +133,8 @@
         application_deadline: form.application_deadline.value || null,
         positions_available: form.positions_available.value || 1
       };
+      submitting = true;
+      JobPortalCommon.setFormLoading(form, true, 'Creating...');
       JobPortalAPI.createJob(payload)
         .then(function () {
           form.reset();
@@ -113,6 +143,10 @@
         })
         .catch(function (err) {
           JobPortalCommon.showAlert('#dashboardAlert', err.message || 'Create job failed', 'danger');
+        })
+        .finally(function () {
+          submitting = false;
+          JobPortalCommon.setFormLoading(form, false);
         });
     });
   }

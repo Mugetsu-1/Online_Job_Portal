@@ -19,6 +19,24 @@
     localStorage.removeItem(USER_KEY);
   }
 
+  function setCookie(name, value, days) {
+    var maxAge = '';
+    if (typeof days === 'number' && days > 0) {
+      maxAge = '; max-age=' + String(days * 24 * 60 * 60);
+    }
+    document.cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value || '') + '; path=/' + maxAge + '; samesite=lax';
+  }
+
+  function getCookie(name) {
+    var escaped = encodeURIComponent(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var match = document.cookie.match(new RegExp('(?:^|;\\s*)' + escaped + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
+  function deleteCookie(name) {
+    document.cookie = encodeURIComponent(name) + '=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; samesite=lax';
+  }
+
   function isLoggedIn() {
     return !!getUser();
   }
@@ -58,6 +76,30 @@
     el.innerHTML = '';
   }
 
+  function setButtonLoading(button, isLoading, loadingText) {
+    if (!button) return;
+    if (isLoading) {
+      if (!button.getAttribute('data-original-text')) {
+        button.setAttribute('data-original-text', button.textContent || '');
+      }
+      button.disabled = true;
+      button.textContent = loadingText || 'Please wait...';
+      return;
+    }
+    button.disabled = false;
+    var original = button.getAttribute('data-original-text');
+    if (original !== null) {
+      button.textContent = original;
+      button.removeAttribute('data-original-text');
+    }
+  }
+
+  function setFormLoading(form, isLoading, loadingText) {
+    if (!form) return;
+    var submitBtn = form.querySelector('button[type="submit"]');
+    setButtonLoading(submitBtn, isLoading, loadingText);
+  }
+
   function formatMoney(min, max, currency) {
     if (!min && !max) return 'Not specified';
     var fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
@@ -87,7 +129,8 @@
     var user = getUser();
     var links = [
       '<a class="nav-link" href="index.html">Home</a>',
-      '<a class="nav-link" href="jobs.html">Jobs</a>'
+      '<a class="nav-link" href="jobs.html">Jobs</a>',
+      '<a class="nav-link" href="web_lab.html">Web Lab</a>'
     ];
 
     if (user) {
@@ -141,11 +184,16 @@
     getUser: getUser,
     setUser: setUser,
     clearUser: clearUser,
+    setCookie: setCookie,
+    getCookie: getCookie,
+    deleteCookie: deleteCookie,
     isLoggedIn: isLoggedIn,
     ensureAuth: ensureAuth,
     parseQuery: parseQuery,
     showAlert: showAlert,
     clearAlert: clearAlert,
+    setButtonLoading: setButtonLoading,
+    setFormLoading: setFormLoading,
     formatMoney: formatMoney,
     formatDate: formatDate,
     escapeHtml: escapeHtml,

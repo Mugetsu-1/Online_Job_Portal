@@ -2,10 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 
 try {
-    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'job_seeker') {
-        http_response_code(403);
-        throw new Exception("Only job seekers can withdraw applications");
-    }
+    requireAuth(['job_seeker']);
 
     $application_id = $_GET['id'] ?? null;
     if (!$application_id) {
@@ -28,6 +25,7 @@ try {
 
     $stmt = $db->prepare("DELETE FROM applications WHERE id = ?");
     $stmt->execute([$application_id]);
+    auditLog('application.withdrawn', 'application', $application_id);
 
     echo json_encode([
         'success' => true,

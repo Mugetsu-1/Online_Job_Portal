@@ -2,20 +2,21 @@
 require_once __DIR__ . '/../config/db.php';
 
 try {
-    if (!isset($_SESSION['user_id'])) {
-        http_response_code(403);
-        throw new Exception("You must be logged in to update profile");
-    }
+    requireAuth(['job_seeker', 'employer', 'admin']);
 
     $is_multipart = strpos($_SERVER['CONTENT_TYPE'] ?? '', 'multipart/form-data') !== false;
     $data = $is_multipart ? $_POST : (array)json_decode(file_get_contents('php://input'), true);
 
     $db = getDB();
+    $db->beginTransaction();
     $update_fields = [];
     $params = [];
     $common_fields = ['full_name', 'phone'];
     foreach ($common_fields as $field) {
         if (isset($data[$field])) {
+            if ($field === 'phone' && !isValidPhoneNumber(trim((string)$data[$field]))) {
+                throw new Exception("Phone must be 10 digits and start with 9841 or 9746");
+            }
             $update_fields[] = "$field = ?";
             $params[] = $data[$field];
         }
@@ -36,6 +37,9 @@ try {
             $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             if (!in_array($file_ext, ALLOWED_FILE_TYPES)) {
                 throw new Exception("Invalid file type. Allowed: PDF, DOC, DOCX");
+            }
+            if (!validateUploadedMime($file['tmp_name'], ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])) {
+                throw new Exception("Invalid resume MIME type");
             }
             $filename = 'resume_' . $_SESSION['user_id'] . '_' . time() . '.' . $file_ext;
             $upload_path = UPLOAD_DIR . 'resumes/' . $filename;
@@ -59,6 +63,9 @@ try {
             $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             if (!in_array($file_ext, $allowed_img)) {
                 throw new Exception("Invalid image type");
+            }
+            if (!validateUploadedMime($file['tmp_name'], ['image/jpeg', 'image/png', 'image/gif'])) {
+                throw new Exception("Invalid profile image MIME type");
             }
             if ($file['size'] > 2 * 1024 * 1024) {
                 throw new Exception("Image size must be less than 2MB");
@@ -87,6 +94,9 @@ try {
             if (!in_array($file_ext, $allowed_img)) {
                 throw new Exception("Invalid image type");
             }
+            if (!validateUploadedMime($file['tmp_name'], ['image/jpeg', 'image/png', 'image/gif'])) {
+                throw new Exception("Invalid company logo MIME type");
+            }
             if ($file['size'] > 2 * 1024 * 1024) {
                 throw new Exception("Image size must be less than 2MB");
             }
@@ -111,6 +121,8 @@ try {
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
     $result = $stmt->fetch();
+    auditLog('profile.updated', 'user', $_SESSION['user_id'], ['fields' => $update_fields]);
+    $db->commit();
 
     echo json_encode([
         'success' => true,
@@ -119,6 +131,9 @@ try {
     ]);
 
 } catch (Exception $e) {
+    if (isset($db) && $db instanceof PDO && $db->inTransaction()) {
+        $db->rollBack();
+    }
     $code = http_response_code();
     if ($code === 200) {
         http_response_code(400);

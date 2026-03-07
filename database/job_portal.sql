@@ -2,6 +2,7 @@
 -- Drop existing tables if they exist
 DROP TABLE IF EXISTS applications CASCADE;
 DROP TABLE IF EXISTS jobs CASCADE;
+DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TYPE IF EXISTS user_role CASCADE;
 DROP TYPE IF EXISTS job_type CASCADE;
@@ -41,6 +42,8 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     CONSTRAINT check_email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+    ,
+    CONSTRAINT check_phone_format CHECK (phone IS NULL OR phone ~ '^(9841|9746)[0-9]{6}$')
 );
 
 -- Jobs table
@@ -101,6 +104,18 @@ CREATE TABLE applications (
     CONSTRAINT unique_application UNIQUE (job_id, applicant_id)
 );
 
+-- Audit logs table
+CREATE TABLE audit_logs (
+    id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER,
+    action VARCHAR(120) NOT NULL,
+    target_type VARCHAR(50),
+    target_id INTEGER,
+    meta JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
@@ -111,6 +126,9 @@ CREATE INDEX idx_jobs_created ON jobs(created_at DESC);
 CREATE INDEX idx_applications_job ON applications(job_id);
 CREATE INDEX idx_applications_applicant ON applications(applicant_id);
 CREATE INDEX idx_applications_status ON applications(status);
+CREATE INDEX idx_audit_logs_user ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX idx_audit_logs_created ON audit_logs(created_at DESC);
 
 -- Full-text search index for job titles and descriptions
 CREATE INDEX idx_jobs_search ON jobs USING gin(to_tsvector('english', title || ' ' || description));
@@ -168,10 +186,10 @@ CREATE TRIGGER update_applications_count
 
 -- Insert sample data
 INSERT INTO users (email, password_hash, role, full_name, phone, company_name, company_description) VALUES
-('employer@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'employer', 'Tech Corp HR', '1234567890', 'Tech Corp', 'Leading technology company'),
-('admin@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'admin', 'Admin User', '0987654321', NULL, NULL);
+('employer@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'employer', 'Tech Corp HR', '9841123456', 'Tech Corp', 'Leading technology company'),
+('admin@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'admin', 'Admin User', '9746123456', NULL, NULL);
 
 INSERT INTO users (email, password_hash, role, full_name, phone, skills, experience_years, education) VALUES
-('jobseeker@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'job_seeker', 'John Doe', '5555555555', 'PHP, JavaScript, PostgreSQL', 3, 'Bachelor in Computer Science');
+('jobseeker@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'job_seeker', 'John Doe', '9841000001', 'PHP, JavaScript, PostgreSQL', 3, 'Bachelor in Computer Science');
 
--- Run backend/seed.php once to set sample user password to 1234
+-- Run backend/seed.php once to set sample user password to Pass@1234

@@ -24,7 +24,7 @@
     }).join('');
   }
 
-  function loadJobs(query, jobsSelector, paginationSelector) {
+  function loadJobs(query, jobsSelector, paginationSelector, onRetry) {
     var jobsEl = document.querySelector(jobsSelector);
     var paginationEl = document.querySelector(paginationSelector);
     jobsEl.innerHTML = '<p class="muted">Loading jobs...</p>';
@@ -37,7 +37,13 @@
       })
       .catch(function (err) {
         jobsEl.innerHTML = '';
-        JobPortalCommon.showAlert('#jobsAlert', err.message || 'Unable to load jobs', 'danger');
+        JobPortalCommon.showAlert('#jobsAlert', (err.message || 'Unable to load jobs') + ' ', 'danger');
+        var alertBox = document.querySelector('#jobsAlert .alert');
+        if (alertBox && onRetry) {
+          alertBox.innerHTML += '<button type="button" id="retryJobsLoad" class="btn btn-sm btn-light ms-2">Retry</button>';
+          var retryBtn = document.getElementById('retryJobsLoad');
+          if (retryBtn) retryBtn.addEventListener('click', onRetry);
+        }
       });
   }
 
@@ -62,7 +68,7 @@
       var query = readFilters(form);
       query.page = page;
       query.limit = 10;
-      loadJobs(query, '#jobsList', '#jobsPagination');
+      loadJobs(query, '#jobsList', '#jobsPagination', refresh);
     }
 
     form.addEventListener('submit', function (e) {
@@ -131,6 +137,7 @@
     var user = JobPortalCommon.ensureAuth(['job_seeker']);
     var form = document.getElementById('applyForm');
     if (!form || !user) return;
+    var submitting = false;
 
     var query = JobPortalCommon.parseQuery();
     var jobId = query.job_id || '';
@@ -148,8 +155,11 @@
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (submitting) return;
       JobPortalCommon.clearAlert('#applyAlert');
       var payload = new FormData(form);
+      submitting = true;
+      JobPortalCommon.setFormLoading(form, true, 'Submitting...');
       JobPortalAPI.applyToJob(payload)
         .then(function () {
           JobPortalCommon.showAlert('#applyAlert', 'Application submitted successfully.', 'success');
@@ -158,6 +168,10 @@
         })
         .catch(function (err) {
           JobPortalCommon.showAlert('#applyAlert', err.message || 'Application failed', 'danger');
+        })
+        .finally(function () {
+          submitting = false;
+          JobPortalCommon.setFormLoading(form, false);
         });
     });
   }

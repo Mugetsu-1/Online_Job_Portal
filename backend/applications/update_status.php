@@ -2,10 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 
 try {
-    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employer') {
-        http_response_code(403);
-        throw new Exception("Only employers can update application status");
-    }
+    requireAuth(['employer']);
 
     $data = json_decode(file_get_contents('php://input'), true);
 
@@ -33,6 +30,7 @@ try {
     $stmt = $db->prepare("UPDATE applications SET status = ?::application_status, notes = COALESCE(?, notes), reviewed_at = CASE WHEN ?::application_status IN ('shortlisted', 'rejected', 'accepted') THEN CURRENT_TIMESTAMP ELSE reviewed_at END, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING updated_at, reviewed_at");
     $stmt->execute([$status, $notes, $status, $application_id]);
     $result = $stmt->fetch();
+    auditLog('application.status.updated', 'application', $application_id, ['status' => $status]);
 
     echo json_encode([
         'success' => true,

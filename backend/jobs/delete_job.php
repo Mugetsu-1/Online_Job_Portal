@@ -2,10 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 
 try {
-    if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['employer', 'admin'])) {
-        http_response_code(403);
-        throw new Exception("Unauthorized");
-    }
+    requireAuth(['employer', 'admin']);
 
     $job_id = $_GET['id'] ?? null;
     if (!$job_id) {
@@ -28,6 +25,7 @@ try {
 
     $stmt = $db->prepare("DELETE FROM jobs WHERE id = ?");
     $stmt->execute([$job_id]);
+    auditLog('job.deleted', 'job', $job_id);
 
     echo json_encode([
         'success' => true,

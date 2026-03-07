@@ -2,10 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 
 try {
-    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employer') {
-        http_response_code(403);
-        throw new Exception("Only employers can create jobs");
-    }
+    requireAuth(['employer']);
 
     $data = json_decode(file_get_contents('php://input'), true);
 
@@ -41,6 +38,7 @@ try {
     $stmt = $db->prepare("INSERT INTO jobs (employer_id, title, description, requirements, responsibilities, job_type, location, salary_min, salary_max, salary_currency, experience_required, education_required, skills_required, application_deadline, positions_available) VALUES (?, ?, ?, ?, ?, ?::job_type, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at");
     $stmt->execute([$_SESSION['user_id'], $title, $description, $requirements, $responsibilities, $job_type, $location, $salary_min, $salary_max, $salary_currency, $experience_required, $education_required, $skills_required, $application_deadline ?: null, $positions_available]);
     $result = $stmt->fetch();
+    auditLog('job.created', 'job', $result['id'], ['title' => $title]);
 
     echo json_encode([
         'success' => true,

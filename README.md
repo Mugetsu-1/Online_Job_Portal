@@ -5,12 +5,22 @@ Semester 5 web technology project with:
 - Backend: PHP REST-style endpoints
 - Database: PostgreSQL
 
+## Syllabus Coverage Notes
+
+- Unit 1, Unit 2, Unit 3, Unit 4, and Unit 6 topics are covered in the project.
+- Unit 5 (AJAX/XML) is intentionally skipped for this project scope.
+- Syllabus wording references MySQL, but this implementation uses PostgreSQL (approved).
+- Extra topic coverage page: `frontend/web_lab.html`
+  - Includes HTML tags/events examples, CSS examples (inline/internal/external), JS popup/cookie handling, jQuery selectors/events/effects, media/canvas, and legacy frames demo.
+
 ## Project Structure
 
 ```text
 OnlineWebPortal/
 ├── frontend/                         # UI pages
 ├── assets/                           # CSS and JS
+│   ├── css/lab.css                   # syllabus coverage styles
+│   └── js/lab.js                     # syllabus coverage scripts
 ├── backend/                          # PHP APIs
 │   ├── auth/
 │   ├── jobs/
@@ -19,7 +29,7 @@ OnlineWebPortal/
 │   ├── config/
 │   │   ├── db.php                    # env-based DB config
 │   │   └── db.example.php
-│   └── seed.php                      # sets sample user passwords to 1234
+│   └── seed.php                      # sets sample user passwords to Pass@1234
 ├── database/
 │   ├── job_portal.sql                # schema
 │   └── utilities.sql                 # optional sample utility data
@@ -116,7 +126,7 @@ Base path: `/backend`
 
 ## Sample Users
 
-After running `backend/seed.php`, password for all is `1234`:
+After running `backend/seed.php`, password for all is `Pass@1234`:
 
 - `jobseeker@example.com`
 - `employer@example.com`

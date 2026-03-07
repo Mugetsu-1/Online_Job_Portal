@@ -46,6 +46,12 @@
     });
   }
 
+  function getCookie(name) {
+    var escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var match = document.cookie.match(new RegExp('(?:^|;\\s*)' + escaped + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
   function request(path, options) {
     var opts = options || {};
     var url = baseUrl + '/' + path.replace(/^\/+/, '');
@@ -56,6 +62,11 @@
       credentials: 'include',
       headers: {}
     };
+    var method = (fetchOpts.method || 'GET').toUpperCase();
+    if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
+      var csrf = getCookie('jp_csrf');
+      if (csrf) fetchOpts.headers['X-CSRF-Token'] = csrf;
+    }
 
     if (opts.body !== undefined && opts.body !== null) {
       if (opts.body instanceof FormData) {

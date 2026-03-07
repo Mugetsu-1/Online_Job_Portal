@@ -2,15 +2,12 @@
 require_once __DIR__ . '/../config/db.php';
 
 try {
-    if (!isset($_SESSION['user_id'])) {
-        http_response_code(403);
-        throw new Exception("You must be logged in to view applications");
-    }
+    requireAuth(['job_seeker', 'employer']);
 
     $db = getDB();
-    $status = $_GET['status'] ?? null;
-    $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-    $limit = isset($_GET['limit']) ? min(50, max(1, intval($_GET['limit']))) : 10;
+    $status = isset($_GET['status']) ? safeEnum($_GET['status'], ['pending', 'reviewed', 'shortlisted', 'rejected', 'accepted'], null) : null;
+    $page = safeInt($_GET['page'] ?? 1, 1, 1, 100000);
+    $limit = safeInt($_GET['limit'] ?? 10, 10, 1, 50);
     $offset = ($page - 1) * $limit;
 
     if ($_SESSION['role'] === 'job_seeker') {

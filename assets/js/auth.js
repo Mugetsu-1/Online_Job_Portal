@@ -1,21 +1,42 @@
 (function () {
+  function isNumericPassword(password) {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,32}$/.test(password || '');
+  }
+
+  function isValidPhone(phone) {
+    if (!phone) return true;
+    return /^(?:9841|9746)\d{6}$/.test(phone);
+  }
+
   function initLogin() {
     var form = document.getElementById('loginForm');
     if (!form) return;
+    var submitting = false;
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (submitting) return;
       JobPortalCommon.clearAlert('#authAlert');
       var payload = {
         email: document.getElementById('email').value.trim(),
         password: document.getElementById('password').value
       };
+      submitting = true;
+      JobPortalCommon.setFormLoading(form, true, 'Logging in...');
       JobPortalAPI.login(payload)
         .then(function (res) {
-          JobPortalCommon.setUser(res.user);
+          var user = res.user || (res.data && res.data.user);
+          if (!user) {
+            throw new Error('Invalid login response');
+          }
+          JobPortalCommon.setUser(user);
           location.href = 'dashboard.html';
         })
         .catch(function (err) {
           JobPortalCommon.showAlert('#authAlert', err.message || 'Login failed', 'danger');
+        })
+        .finally(function () {
+          submitting = false;
+          JobPortalCommon.setFormLoading(form, false);
         });
     });
   }
@@ -30,6 +51,7 @@
   function initRegister() {
     var form = document.getElementById('registerForm');
     if (!form) return;
+    var submitting = false;
 
     var roleSelect = document.getElementById('role');
     roleFields(roleSelect.value);
@@ -39,13 +61,24 @@
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (submitting) return;
       JobPortalCommon.clearAlert('#authAlert');
+      var password = document.getElementById('password').value;
+      if (!isNumericPassword(password)) {
+        JobPortalCommon.showAlert('#authAlert', 'Password must be 8-32 chars with uppercase, lowercase, number, and special symbol.', 'danger');
+        return;
+      }
+      var phone = document.getElementById('phone').value.trim();
+      if (!isValidPhone(phone)) {
+        JobPortalCommon.showAlert('#authAlert', 'Phone must be 10 digits and start with 9841 or 9746.', 'danger');
+        return;
+      }
       var role = roleSelect.value;
       var payload = {
         email: document.getElementById('email').value.trim(),
-        password: document.getElementById('password').value,
+        password: password,
         full_name: document.getElementById('full_name').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
+        phone: phone,
         role: role
       };
 
@@ -58,6 +91,8 @@
         payload.company_website = document.getElementById('company_website').value.trim();
       }
 
+      submitting = true;
+      JobPortalCommon.setFormLoading(form, true, 'Registering...');
       JobPortalAPI.register(payload)
         .then(function () {
           JobPortalCommon.showAlert('#authAlert', 'Registration successful. You can login now.', 'success');
@@ -67,6 +102,10 @@
         })
         .catch(function (err) {
           JobPortalCommon.showAlert('#authAlert', err.message || 'Registration failed', 'danger');
+        })
+        .finally(function () {
+          submitting = false;
+          JobPortalCommon.setFormLoading(form, false);
         });
     });
   }

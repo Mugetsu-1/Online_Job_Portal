@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Web technology syllabus lab page for HTML, CSS, and JavaScript topic coverage.">
+  <title>JobPortal | Web Lab</title>
+  <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/lab.css">
+  <style>
+    #internalStyleDemo {
+      color: #003b8e;
+      text-shadow: 1px 1px 0 #c9dbff;
+    }
+
+    .internal-class {
+      border-left: 4px solid #0d6efd;
+      padding-left: 0.75rem;
+    }
+  </style>
+</head>
+<body data-page="web-lab" onload="window.WebLab&&WebLab.onWindowLoad()" onresize="window.WebLab&&WebLab.onWindowResize()">
+  <div id="topNav"></div>
+  <main class="container py-4">
+    <header class="mb-4">
+      <h1 class="h3 mb-1">Web Technology Coverage Lab</h1>
+      <p class="text-secondary mb-0">Covers Unit 2, Unit 3, Unit 4 topics used in this project.</p>
+    </header>
+
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5">Text, Inline Tags, and Spacing</h2>
+        <p id="internalStyleDemo">Internal CSS with ID selector and text-shadow.</p>
+        <p class="internal-class">
+          <b>Bold</b>, <i>italic</i>, <small>small</small>, x<sup>2</sup>, H<sub>2</sub>O,
+          <span style="color:#0b7a43;">inline style span</span>, <strong>strong</strong>, <tt>teletype</tt>.
+        </p>
+        <pre>Preformatted block
+line 1
+line 2</pre>
+        Line break demo<br>Second line.
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5">Lists, Image, Table, and Figure</h2>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <h3 class="h6">Ordered List</h3>
+            <ol>
+              <li>Plan</li>
+              <li>Build</li>
+              <li>Deploy</li>
+            </ol>
+            <h3 class="h6">Unordered List</h3>
+            <ul>
+              <li>HTML</li>
+              <li>CSS</li>
+              <li>JavaScript</li>
+            </ul>
+            <h3 class="h6">Definition List</h3>
+            <dl>
+              <dt>HTTP</dt>
+              <dd>Protocol used for web communication.</dd>
+              <dt>DOM</dt>
+              <dd>Tree representation of HTML in browser memory.</dd>
+            </dl>
+          </div>
+          <div class="col-md-4">
+            <figure class="m-0">
+              <img
+                class="img-fluid rounded border"
+                alt="Sample figure illustration"
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='240'%3E%3Crect width='100%25' height='100%25' fill='%23e8f0ff'/%3E%3Ccircle cx='120' cy='120' r='70' fill='%230d6efd' fill-opacity='0.22'/%3E%3Crect x='170' y='70' width='180' height='100' rx='14' fill='%230b7a43' fill-opacity='0.25'/%3E%3Ctext x='210' y='128' font-size='24' text-anchor='middle' fill='%231b2b43'%3EWeb Lab%3C/text%3E%3C/svg%3E">
+              <figcaption class="small text-secondary mt-2">Figure + image tag demo.</figcaption>
+            </figure>
+          </div>
+          <div class="col-md-4">
+            <table class="table table-sm table-bordered">
+              <thead>
+                <tr>
+                  <th>Unit</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>HTML</td><td>Covered</td></tr>
+                <tr><td>CSS</td><td>Covered</td></tr>
+                <tr><td>JS</td><td>Covered</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5">Semantic Layout and Positioning</h2>
+        <article class="lab-article">
+          <h3 class="h6">Article Section</h3>
+          <p>Relative, absolute and float positioning samples are shown below.</p>
+          <aside class="lab-aside">Aside block</aside>
+          <div class="position-demo">
+            <div class="rel-box">Relative box
+              <span class="abs-chip">Absolute</span>
+            </div>
+            <div class="float-box">Float left</div>
+            <div class="float-box">Float left</div>
+            <div class="clearfix"></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5">Forms and HTML Events</h2>
+        <div id="eventLog" class="small text-secondary mb-2">Event log will appear here.</div>
+        <form id="eventForm" class="row g-3" onsubmit="return window.WebLab?WebLab.handleInlineSubmit(event):false">
+          <div class="col-md-6">
+            <label class="form-label" for="nameField">Name</label>
+            <input id="nameField" class="form-control" type="text" required onfocus="WebLab.logEvent('Focus on name field')">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="keyboardField">Keyboard Event Box</label>
+            <input id="keyboardField" class="form-control" type="text" placeholder="Type here">
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="selectField">Change Event</label>
+            <select id="selectField" class="form-select">
+              <option value="">Choose one</option>
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+              <option value="js">JavaScript</option>
+            </select>
+          </div>
+          <div class="col-12 d-flex flex-wrap gap-2">
+            <button class="btn btn-primary" type="submit">Submit Form</button>
+            <button class="btn btn-outline-secondary" type="button" id="alertBtn">Alert</button>
+            <button class="btn btn-outline-secondary" type="button" id="confirmBtn">Confirm</button>
+            <button class="btn btn-outline-secondary" type="button" id="promptBtn">Prompt</button>
+          </div>
+        </form>
+        <div id="mouseArea" class="mt-3 p-3 border rounded" title="Move mouse and click inside this box">
+          Mouse event area: move/click/hover here.
+        </div>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5">Audio, Video, Canvas, and Frames</h2>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <audio controls>
+              <source src="" type="audio/mpeg">
+              Your browser does not support audio.
+            </audio>
+          </div>
+          <div class="col-md-4">
+            <video width="240" controls>
+              <source src="" type="video/mp4">
+              Your browser does not support video.
+            </video>
+          </div>
+          <div class="col-md-4">
+            <canvas id="canvasDemo" width="240" height="120" class="border rounded"></canvas>
+          </div>
+          <div class="col-12">
+            <p class="mb-1">Legacy frames demo:</p>
+            <a class="btn btn-sm btn-outline-primary" href="frames_demo.html" target="_blank">Open Frameset Demo</a>
+            <iframe src="jobs.html" title="iframe demo" class="lab-iframe mt-2"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5">Cookie Handling and jQuery Demo</h2>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button id="setCookieBtn" class="btn btn-sm btn-success" type="button">Set Cookie</button>
+          <button id="readCookieBtn" class="btn btn-sm btn-outline-success" type="button">Read Cookie</button>
+          <button id="clearCookieBtn" class="btn btn-sm btn-outline-danger" type="button">Clear Cookie</button>
+        </div>
+        <p id="cookieResult" class="small text-secondary"></p>
+
+        <div class="mt-3">
+          <button id="jqToggleBtn" class="btn btn-sm btn-dark" type="button">jQuery Toggle</button>
+          <ul id="jqSelectorDemo" class="mt-3">
+            <li class="jq-item">jQuery Selector Item 1</li>
+            <li class="jq-item">jQuery Selector Item 2</li>
+            <li class="jq-item">jQuery Selector Item 3</li>
+          </ul>
+          <div id="jqEffectsBox" class="p-2 border rounded mt-2">This box uses jQuery effects.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="text-secondary small">
+      Window status: <span id="windowStatus">ready</span>
+    </footer>
+  </main>
+
+  <script src="../assets/js/jquery.min.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/js/lab.js"></script>
+</body>
+</html>

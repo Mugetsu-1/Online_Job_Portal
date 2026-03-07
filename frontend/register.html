@@ -35,11 +35,11 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label" for="password">Password</label>
-                <input id="password" class="form-control" type="password" minlength="4" required>
+                <input id="password" class="form-control" type="password" minlength="8" maxlength="32" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,32}" title="8-32 chars with uppercase, lowercase, number, and special symbol (example: !)" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label" for="phone">Phone</label>
-                <input id="phone" class="form-control" type="text">
+                <input id="phone" class="form-control" type="tel" inputmode="numeric" pattern="(?:9841|9746)\d{6}" maxlength="10" title="Phone must be 10 digits and start with 9841 or 9746">
               </div>
 
               <div id="jobSeekerFields" class="col-12 rounded-3 p-3 border seeker-employer-box">

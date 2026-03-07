@@ -1,4 +1,13 @@
 (function () {
+  function isNumericPassword(password) {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,32}$/.test(password || '');
+  }
+
+  function isValidPhone(phone) {
+    if (!phone) return true;
+    return /^(?:9841|9746)\d{6}$/.test(phone);
+  }
+
   function fillProfile(user) {
     document.getElementById('email').value = user.email || '';
     document.getElementById('role').value = user.role || '';
@@ -44,10 +53,18 @@
 
   function initProfileUpdate() {
     var form = document.getElementById('profileForm');
+    var submitting = false;
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (submitting) return;
       JobPortalCommon.clearAlert('#profileAlert');
+      if (!isValidPhone(form.phone.value.trim())) {
+        JobPortalCommon.showAlert('#profileAlert', 'Phone must be 10 digits and start with 9841 or 9746.', 'danger');
+        return;
+      }
       var payload = new FormData(form);
+      submitting = true;
+      JobPortalCommon.setFormLoading(form, true, 'Updating...');
       JobPortalAPI.updateProfile(payload)
         .then(function () {
           JobPortalCommon.showAlert('#profileAlert', 'Profile updated successfully.', 'success');
@@ -55,15 +72,27 @@
         })
         .catch(function (err) {
           JobPortalCommon.showAlert('#profileAlert', err.message || 'Profile update failed', 'danger');
+        })
+        .finally(function () {
+          submitting = false;
+          JobPortalCommon.setFormLoading(form, false);
         });
     });
   }
 
   function initPasswordChange() {
     var form = document.getElementById('passwordForm');
+    var submitting = false;
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (submitting) return;
       JobPortalCommon.clearAlert('#passwordAlert');
+      if (!isNumericPassword(form.new_password.value)) {
+        JobPortalCommon.showAlert('#passwordAlert', 'New password must be 8-32 chars with uppercase, lowercase, number, and special symbol.', 'danger');
+        return;
+      }
+      submitting = true;
+      JobPortalCommon.setFormLoading(form, true, 'Changing...');
       JobPortalAPI.changePassword({
         current_password: form.current_password.value,
         new_password: form.new_password.value
@@ -72,6 +101,9 @@
         JobPortalCommon.showAlert('#passwordAlert', 'Password changed successfully.', 'success');
       }).catch(function (err) {
         JobPortalCommon.showAlert('#passwordAlert', err.message || 'Password change failed', 'danger');
+      }).finally(function () {
+        submitting = false;
+        JobPortalCommon.setFormLoading(form, false);
       });
     });
   }

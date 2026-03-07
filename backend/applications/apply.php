@@ -2,10 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 
 try {
-    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'job_seeker') {
-        http_response_code(403);
-        throw new Exception("Only job seekers can apply to jobs");
-    }
+    requireAuth(['job_seeker']);
 
     $input_json = null;
     $job_id = isset($_POST['job_id']) ? (int)$_POST['job_id'] : (isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0);
@@ -52,6 +49,9 @@ try {
         if (!in_array($file_ext, ALLOWED_FILE_TYPES)) {
             throw new Exception("Invalid file type. Allowed: PDF, DOC, DOCX");
         }
+        if (!validateUploadedMime($file['tmp_name'], ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])) {
+            throw new Exception("Invalid resume MIME type");
+        }
         $filename = 'app_' . $_SESSION['user_id'] . '_' . $job_id . '_' . time() . '.' . $file_ext;
         $upload_path = UPLOAD_DIR . 'resumes/' . $filename;
         if (!is_dir(dirname($upload_path))) {
@@ -72,6 +72,7 @@ try {
     $stmt = $db->prepare("INSERT INTO applications (job_id, applicant_id, cover_letter, resume_path) VALUES (?, ?, ?, ?) RETURNING id, applied_at");
     $stmt->execute([$job_id, $_SESSION['user_id'], $cover_letter, $resume_path]);
     $result = $stmt->fetch();
+    auditLog('application.created', 'application', $result['id'], ['job_id' => $job_id]);
 
     echo json_encode([
         'success' => true,

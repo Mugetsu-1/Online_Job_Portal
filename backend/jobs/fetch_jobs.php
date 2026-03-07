@@ -3,14 +3,14 @@ require_once __DIR__ . '/../config/db.php';
 
 try {
     $db = getDB();
-    $search = isset($_GET['search']) ? trim($_GET['search']) : null;
-    $job_type = isset($_GET['job_type']) ? trim($_GET['job_type']) : null;
-    $location = isset($_GET['location']) ? trim($_GET['location']) : null;
-    $min_salary = isset($_GET['min_salary']) ? (float)$_GET['min_salary'] : null;
-    $max_salary = isset($_GET['max_salary']) ? (float)$_GET['max_salary'] : null;
-    $experience = isset($_GET['experience']) ? (int)$_GET['experience'] : null;
-    $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-    $limit = isset($_GET['limit']) ? min(50, max(1, (int)$_GET['limit'])) : 10;
+    $search = isset($_GET['search']) ? safeString($_GET['search'], 120, true) : null;
+    $job_type = isset($_GET['job_type']) ? safeEnum(trim($_GET['job_type']), ['full_time', 'part_time', 'contract', 'internship', 'remote'], null) : null;
+    $location = isset($_GET['location']) ? safeString($_GET['location'], 120, true) : null;
+    $min_salary = isset($_GET['min_salary']) && $_GET['min_salary'] !== '' ? max(0, (float)$_GET['min_salary']) : null;
+    $max_salary = isset($_GET['max_salary']) && $_GET['max_salary'] !== '' ? max(0, (float)$_GET['max_salary']) : null;
+    $experience = safeInt($_GET['experience'] ?? null, null, 0, 50);
+    $page = safeInt($_GET['page'] ?? 1, 1, 1, 100000);
+    $limit = safeInt($_GET['limit'] ?? 10, 10, 1, 50);
     $offset = ($page - 1) * $limit;
 
     $where = ["j.is_active = true"];
