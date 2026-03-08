@@ -71,6 +71,13 @@ sessions/
 config/secrets.php
 private_keys/
 certificates/
+*.pem
+*.key
+*.p12
+*.pfx
+backend/config/db.local.php
+backend/config/*secret*.php
+scripts/*.local.ps1
 
 # Documentation build
 docs/_build/
@@ -80,8 +87,5 @@ coverage/
 .coverage
 htmlcov/
 
-# Local sync script with real credentials
-scripts/sync_supabase_to_local.local.ps1
-
-
+# Legacy local db config filename
 db.php

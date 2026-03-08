@@ -123,7 +123,7 @@ Base path: `/backend`
 
 ## Sample Users
 
-After running `backend/seed.php`, password for all is `Pass@1234`:
+After running `backend/seed.php`, sample users are:
 
 - `jobseeker@example.com`
 - `employer@example.com`
@@ -134,6 +134,8 @@ After running `backend/seed.php`, password for all is `Pass@1234`:
 - Never commit real DB credentials.
 - Keep secrets only in platform env vars (Render/Supabase/local machine).
 - `scripts/sync_supabase_to_local.local.ps1` is intentionally gitignored.
+- `backend/config/db.php` is committed in env-based form and must not contain hardcoded passwords.
+- If you need local-only credentials, use local override files such as `backend/config/db.local.php` or `*.local.ps1` (ignored by git).
 
 ## License
 
