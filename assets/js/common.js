@@ -129,8 +129,7 @@
     var user = getUser();
     var links = [
       '<a class="nav-link" href="index.html">Home</a>',
-      '<a class="nav-link" href="jobs.html">Jobs</a>',
-      '<a class="nav-link" href="web_lab.html">Web Lab</a>'
+      '<a class="nav-link" href="jobs.html">Jobs</a>'
     ];
 
     if (user) {

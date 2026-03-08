@@ -10,8 +10,7 @@ Semester 5 web technology project with:
 - Unit 1, Unit 2, Unit 3, Unit 4, and Unit 6 topics are covered in the project.
 - Unit 5 (AJAX/XML) is intentionally skipped for this project scope.
 - Syllabus wording references MySQL, but this implementation uses PostgreSQL (approved).
-- Extra topic coverage page: `frontend/web_lab.html`
-  - Includes HTML tags/events examples, CSS examples (inline/internal/external), JS popup/cookie handling, jQuery selectors/events/effects, media/canvas, and legacy frames demo.
+- Syllabus compliance details are documented in this repository; project website UI remains focused on the job portal only.
 
 ## Project Structure
 
@@ -19,8 +18,6 @@ Semester 5 web technology project with:
 OnlineWebPortal/
 ├── frontend/                         # UI pages
 ├── assets/                           # CSS and JS
-│   ├── css/lab.css                   # syllabus coverage styles
-│   └── js/lab.js                     # syllabus coverage scripts
 ├── backend/                          # PHP APIs
 │   ├── auth/
 │   ├── jobs/

@@ -82,3 +82,6 @@ htmlcov/
 
 # Local sync script with real credentials
 scripts/sync_supabase_to_local.local.ps1
+
+
+db.php
