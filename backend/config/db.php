@@ -13,7 +13,7 @@ define('DB_HOST', envOrDefault('DB_HOST', 'localhost'));
 define('DB_PORT', envOrDefault('DB_PORT', '5432'));
 define('DB_NAME', envOrDefault('DB_NAME', 'job_portal'));
 define('DB_USER', envOrDefault('DB_USER', 'postgres'));
-define('DB_PASSWORD', envOrDefault('DB_PASSWORD', 'ello123'));
+define('DB_PASSWORD', envOrDefault('DB_PASSWORD', ''));
 define('DB_SSLMODE', envOrDefault('DB_SSLMODE', 'prefer'));
 define('BASE_URL', envOrDefault('BASE_URL', 'http://localhost:8080'));
 define('UPLOAD_DIR', envOrDefault('UPLOAD_DIR', __DIR__ . '/../uploads/'));
