@@ -22,7 +22,8 @@ define('MAX_FILE_SIZE', 5 * 1024 * 1024);
 define('ALLOWED_FILE_TYPES', ['pdf', 'doc', 'docx']);
 define('SESSION_LIFETIME', 3600 * 24);
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+$debug = strtolower(envOrDefault('APP_DEBUG', ''));
+ini_set('display_errors', ($debug === '1' || $debug === 'true') ? 1 : 0);
 
 class Database {
     private static $instance = null;
@@ -75,13 +76,16 @@ setcookie('jp_csrf', $_SESSION['csrf_token'], [
     'samesite' => 'Lax'
 ]);
 
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-    header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
-    header('Vary: Origin');
-} else {
-    header('Access-Control-Allow-Origin: *');
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowedOrigins = array_filter(array_map('trim', explode(',', envOrDefault('ALLOWED_ORIGINS', ''))));
+if (empty($allowedOrigins)) {
+    $allowedOrigins = ['http://localhost:8000', 'http://localhost:8080'];
 }
-header('Access-Control-Allow-Credentials: true');
+if ($origin && in_array($origin, $allowedOrigins, true)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Access-Control-Allow-Credentials: true');
+    header('Vary: Origin');
+}
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token');
 header('Content-Type: application/json');
@@ -219,6 +223,27 @@ function validateUploadedMime($tmpPath, $allowedMimes) {
         return false;
     }
     return in_array($mime, $allowedMimes, true);
+}
+
+function getRequestBaseUrl() {
+    $scheme = 'http';
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        $scheme = trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]);
+    } elseif (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        $scheme = 'https';
+    }
+    $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? '';
+    if ($host) {
+        return $scheme . '://' . $host;
+    }
+    return rtrim(BASE_URL, '/');
+}
+
+function publicUploadUrl($relativePath) {
+    if (!$relativePath) return null;
+    if (preg_match('#^https?://#i', $relativePath)) return $relativePath;
+    $base = rtrim(getRequestBaseUrl(), '/');
+    return $base . '/backend/' . ltrim($relativePath, '/');
 }
 
 function auditLog($action, $targetType = null, $targetId = null, $meta = null) {

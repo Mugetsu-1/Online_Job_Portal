@@ -6,12 +6,14 @@ define('DB_USER', 'postgres');
 define('DB_PASSWORD', 'your_password_here');
 define('BASE_URL', 'http://localhost/job-portal');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
+define('ALLOWED_ORIGINS', ['http://localhost:8000', 'http://localhost:8080']);
+define('APP_DEBUG', true);
 define('MAX_FILE_SIZE', 5 * 1024 * 1024);
 define('ALLOWED_FILE_TYPES', ['pdf', 'doc', 'docx']);
 define('SESSION_LIFETIME', 3600 * 24);
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', APP_DEBUG ? 1 : 0);
 
 class Database {
     private static $instance = null;
@@ -55,15 +57,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-    header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin && in_array($origin, ALLOWED_ORIGINS, true)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Access-Control-Allow-Credentials: true');
     header('Vary: Origin');
-} else {
-    header('Access-Control-Allow-Origin: *');
 }
-header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token');
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

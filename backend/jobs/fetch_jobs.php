@@ -59,6 +59,9 @@ try {
         if ($job['application_deadline']) {
             $job['application_deadline'] = date('Y-m-d', strtotime($job['application_deadline']));
         }
+        if (!empty($job['company_logo'])) {
+            $job['company_logo'] = publicUploadUrl($job['company_logo']);
+        }
     }
 
     echo json_encode([

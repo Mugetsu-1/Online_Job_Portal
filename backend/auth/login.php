@@ -43,14 +43,14 @@ try {
             'email' => $user['email'],
             'role' => $user['role'],
             'full_name' => $user['full_name'],
-            'profile_picture' => $user['profile_picture']
+            'profile_picture' => publicUploadUrl($user['profile_picture'])
         ]
     ];
     $response['csrf_token'] = $_SESSION['csrf_token'];
 
     if ($user['role'] === 'employer') {
         $response['user']['company_name'] = $user['company_name'];
-        $response['user']['company_logo'] = $user['company_logo'];
+        $response['user']['company_logo'] = publicUploadUrl($user['company_logo']);
     }
 
     api_success('Login successful', $response);

@@ -88,4 +88,4 @@ coverage/
 htmlcov/
 
 # Legacy local db config filename
-db.php
+/db.php

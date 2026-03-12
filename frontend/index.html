@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JobPortal | Home</title>
-  <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../assets/css/style.css">
   <link rel="stylesheet" href="../assets/css/jobs.css">
 </head>
@@ -19,7 +19,9 @@
             <p class="text-secondary mb-3">Browse jobs, apply faster, and track every application in one place.</p>
             <div class="d-flex flex-wrap gap-2">
               <a class="btn btn-primary" href="jobs.html">Browse Jobs</a>
-              <a class="btn btn-outline-primary" href="register.html">Create Account</a>
+              <a class="btn btn-outline-primary" href="register.html">Create Account
+                <i class="bi bi-door-open-fill"></i>
+              </a>
             </div>
           </div>
           <div class="col-md-4">
@@ -43,7 +45,7 @@
       <div id="featuredJobs" class="jobs-grid"></div>
     </section>
   </main>
-  <script src="../assets/js/jquery.min.js"></script>
+  <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/api.js"></script>
   <script src="../assets/js/common.js"></script>
   <script src="../assets/js/jobs.js"></script>

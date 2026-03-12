@@ -128,22 +128,22 @@
   function navTemplate() {
     var user = getUser();
     var links = [
-      '<a class="nav-link" href="index.html">Home</a>',
-      '<a class="nav-link" href="jobs.html">Jobs</a>'
+      '<a class="nav-link" href="index.html"><i class="bi bi-house-door me-1"></i>Home</a>',
+      '<a class="nav-link" href="jobs.html"><i class="bi bi-briefcase me-1"></i>Jobs</a>'
     ];
 
     if (user) {
-      links.push('<a class="nav-link" href="dashboard.html">Dashboard</a>');
-      links.push('<a class="nav-link" href="profile.html">Profile</a>');
-      links.push('<button id="logoutBtn" class="btn btn-outline-danger btn-sm ms-2">Logout</button>');
+      links.push('<a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>');
+      links.push('<a class="nav-link" href="profile.html"><i class="bi bi-person-circle me-1"></i>Profile</a>');
+      links.push('<button id="logoutBtn" class="btn btn-outline-danger btn-sm ms-2"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>');
     } else {
-      links.push('<a class="nav-link" href="login.html">Login</a>');
-      links.push('<a class="btn btn-primary btn-sm ms-2" href="register.html">Register</a>');
+      links.push('<a class="nav-link" href="login.html"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>');
+      links.push('<a class="btn btn-primary btn-sm ms-2" href="register.html"><i class="bi bi-person-plus-fill me-1"></i>Register</a>');
     }
 
     return '<nav class="navbar bg-white border-bottom sticky-top">'
       + '<div class="container d-flex flex-wrap gap-2 py-2">'
-      + '<a class="navbar-brand fw-bold me-auto" href="index.html">JobPortal</a>'
+      + '<a class="navbar-brand fw-bold me-auto" href="index.html"><i class="bi bi-briefcase-fill me-2"></i>JobPortal</a>'
       + '<div class="navbar-nav flex-row flex-wrap align-items-center gap-1">' + links.join('') + '</div>'
       + '</div>'
       + '</nav>';

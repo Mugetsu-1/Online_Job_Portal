@@ -19,6 +19,15 @@ try {
 
     $user['created_at'] = date('Y-m-d H:i:s', strtotime($user['created_at']));
     $user['updated_at'] = date('Y-m-d H:i:s', strtotime($user['updated_at']));
+    if (!empty($user['profile_picture'])) {
+        $user['profile_picture'] = publicUploadUrl($user['profile_picture']);
+    }
+    if (!empty($user['resume_path'])) {
+        $user['resume_path'] = publicUploadUrl($user['resume_path']);
+    }
+    if (!empty($user['company_logo'])) {
+        $user['company_logo'] = publicUploadUrl($user['company_logo']);
+    }
 
     echo json_encode([
         'success' => true,

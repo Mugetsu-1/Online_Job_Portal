@@ -30,6 +30,9 @@ try {
     if ($job['skills_required']) {
         $job['skills_required'] = array_map('trim', explode(',', $job['skills_required']));
     }
+    if (!empty($job['company_logo'])) {
+        $job['company_logo'] = publicUploadUrl($job['company_logo']);
+    }
 
     echo json_encode([
         'success' => true,

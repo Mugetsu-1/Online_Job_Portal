@@ -1,8 +1,10 @@
 FROM php:8.2-cli
-RUN apt-get update && apt-get install -y --no-install-recommends libpq-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends libpq-dev nodejs npm \
     && rm -rf /var/lib/apt/lists/*
 RUN docker-php-ext-install pdo pdo_pgsql
 WORKDIR /app
+COPY package*.json ./
+RUN npm ci
 COPY . .
 RUN mkdir -p /app/backend/uploads/resumes /app/backend/uploads/profiles /app/backend/uploads/logos
 ENV PORT=8080

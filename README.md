@@ -50,21 +50,29 @@ OnlineWebPortal/
 - `DB_SSLMODE` (default: `prefer`, use `require` for Supabase)
 - `BASE_URL` (default: `http://localhost:8080`)
 - `UPLOAD_DIR` (default: `backend/uploads`)
+- `ALLOWED_ORIGINS` (comma-separated CORS allowlist; default: `http://localhost:8000,http://localhost:8080`)
+- `APP_DEBUG` (set to `true` or `1` to show PHP errors locally)
 
 If an env var is missing, `db.php` uses a local fallback value.
 
 ## Local Run (Without Docker)
 
 1. Ensure PHP has `pdo_pgsql`.
-2. Create/import DB:
+2. Install frontend dependencies (Bootstrap, icons):
+
+```bash
+npm install
+```
+
+3. Create/import DB:
    - Import `database/job_portal.sql` into PostgreSQL.
-3. Start server from repo root:
+4. Start server from repo root:
 
 ```bash
 php -S localhost:8000 -t .
 ```
 
-4. Open:
+5. Open:
    - Frontend: `http://localhost:8000/frontend/index.html`
    - API test: `http://localhost:8000/backend/jobs/fetch_jobs.php`
 

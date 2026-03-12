@@ -54,6 +54,15 @@ try {
         if (!empty($app['updated_at'])) {
             $app['updated_at'] = date('Y-m-d H:i:s', strtotime($app['updated_at']));
         }
+        if (!empty($app['resume_path'])) {
+            $app['resume_path'] = publicUploadUrl($app['resume_path']);
+        }
+        if (!empty($app['company_logo'])) {
+            $app['company_logo'] = publicUploadUrl($app['company_logo']);
+        }
+        if (!empty($app['profile_picture'])) {
+            $app['profile_picture'] = publicUploadUrl($app['profile_picture']);
+        }
     }
 
     echo json_encode([
