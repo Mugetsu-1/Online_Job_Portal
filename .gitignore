@@ -81,6 +81,7 @@ scripts/*.local.ps1
 
 # Documentation build
 docs/_build/
+dist/
 
 # Test coverage
 coverage/

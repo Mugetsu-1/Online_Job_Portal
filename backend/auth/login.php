@@ -29,13 +29,14 @@ try {
         api_error('Account is deactivated. Please contact support.', 403, 'ACCOUNT_INACTIVE');
     }
 
+    session_regenerate_id(true);
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['email'] = $user['email'];
     $_SESSION['role'] = $user['role'];
     $_SESSION['full_name'] = $user['full_name'];
     $cookie_expiry = time() + (30 * 24 * 60 * 60);
-    setcookie('jp_last_login_email', $user['email'], $cookie_expiry, '/');
-    setcookie('jp_last_login_at', date('c'), $cookie_expiry, '/');
+    setAppCookie('jp_last_login_email', $user['email'], ['expires' => $cookie_expiry, 'httponly' => false]);
+    setAppCookie('jp_last_login_at', date('c'), ['expires' => $cookie_expiry, 'httponly' => false]);
 
     $response = [
         'user' => [

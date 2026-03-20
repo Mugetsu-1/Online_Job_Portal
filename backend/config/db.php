@@ -9,6 +9,32 @@ function envOrDefault($key, $default) {
     return $value;
 }
 
+function envBool($key, $default = false) {
+    $value = getenv($key);
+    if ($value === false || $value === '') {
+        return $default;
+    }
+    return in_array(strtolower(trim((string)$value)), ['1', 'true', 'yes', 'on'], true);
+}
+
+function normalizeSameSite($value, $default = 'Lax') {
+    $normalized = ucfirst(strtolower(trim((string)$value)));
+    return in_array($normalized, ['Lax', 'Strict', 'None'], true) ? $normalized : $default;
+}
+
+function currentRequestIsHttps() {
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        return strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0])) === 'https';
+    }
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        return true;
+    }
+    if (!empty($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443) {
+        return true;
+    }
+    return false;
+}
+
 define('DB_HOST', envOrDefault('DB_HOST', 'localhost'));
 define('DB_PORT', envOrDefault('DB_PORT', '5432'));
 define('DB_NAME', envOrDefault('DB_NAME', 'job_portal'));
@@ -21,6 +47,11 @@ define('APP_LOG_FILE', envOrDefault('APP_LOG_FILE', __DIR__ . '/../logs/app.log'
 define('MAX_FILE_SIZE', 5 * 1024 * 1024);
 define('ALLOWED_FILE_TYPES', ['pdf', 'doc', 'docx']);
 define('SESSION_LIFETIME', 3600 * 24);
+define('SESSION_COOKIE_NAME', envOrDefault('SESSION_COOKIE_NAME', 'jp_session'));
+define('SESSION_COOKIE_SAMESITE', normalizeSameSite(envOrDefault('SESSION_COOKIE_SAMESITE', 'Lax')));
+define('SESSION_COOKIE_SECURE', envBool('SESSION_COOKIE_SECURE', currentRequestIsHttps()));
+define('SESSION_COOKIE_DOMAIN', trim((string)envOrDefault('SESSION_COOKIE_DOMAIN', '')));
+define('CSRF_COOKIE_ENABLED', envBool('CSRF_COOKIE_ENABLED', true));
 error_reporting(E_ALL);
 $debug = strtolower(envOrDefault('APP_DEBUG', ''));
 ini_set('display_errors', ($debug === '1' || $debug === 'true') ? 1 : 0);
@@ -37,7 +68,8 @@ class Database {
             $this->connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         } catch (PDOException $e) {
-            die("Connection failed: " . $e->getMessage());
+            error_log('Database connection failed: ' . $e->getMessage());
+            throw new RuntimeException('Database connection failed');
         }
     }
 
@@ -63,25 +95,75 @@ function getDB() {
     return Database::getInstance()->getConnection();
 }
 
+function baseCookieOptions($httpOnly = true) {
+    $options = [
+        'path' => '/',
+        'secure' => SESSION_COOKIE_SECURE,
+        'httponly' => $httpOnly,
+        'samesite' => SESSION_COOKIE_SAMESITE
+    ];
+    if (SESSION_COOKIE_DOMAIN !== '') {
+        $options['domain'] = SESSION_COOKIE_DOMAIN;
+    }
+    return $options;
+}
+
+function setAppCookie($name, $value, $options = []) {
+    $httpOnly = array_key_exists('httponly', $options) ? (bool)$options['httponly'] : true;
+    $cookieOptions = array_merge(baseCookieOptions($httpOnly), $options);
+    if (!array_key_exists('expires', $cookieOptions) || $cookieOptions['expires'] === null) {
+        unset($cookieOptions['expires']);
+    }
+    return setcookie($name, $value, $cookieOptions);
+}
+
+function clearAppCookie($name, $options = []) {
+    $httpOnly = array_key_exists('httponly', $options) ? (bool)$options['httponly'] : true;
+    $cookieOptions = array_merge(baseCookieOptions($httpOnly), $options, [
+        'expires' => time() - 3600
+    ]);
+    return setcookie($name, '', $cookieOptions);
+}
+
+function isAllowedOrigin($origin, $allowedOrigins) {
+    foreach ($allowedOrigins as $pattern) {
+        if ($origin === $pattern) {
+            return true;
+        }
+        if (strpos($pattern, '*') !== false) {
+            $regex = '#^' . str_replace('\*', '[^.]+', preg_quote($pattern, '#')) . '$#i';
+            if (preg_match($regex, $origin) === 1) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+ini_set('session.use_only_cookies', '1');
+ini_set('session.use_strict_mode', '1');
+session_name(SESSION_COOKIE_NAME);
+session_set_cookie_params(baseCookieOptions(true) + ['lifetime' => SESSION_LIFETIME]);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
-setcookie('jp_csrf', $_SESSION['csrf_token'], [
-    'expires' => time() + SESSION_LIFETIME,
-    'path' => '/',
-    'httponly' => false,
-    'samesite' => 'Lax'
-]);
+if (CSRF_COOKIE_ENABLED) {
+    setAppCookie('jp_csrf', $_SESSION['csrf_token'], [
+        'expires' => time() + SESSION_LIFETIME,
+        'httponly' => false
+    ]);
+}
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowedOrigins = array_filter(array_map('trim', explode(',', envOrDefault('ALLOWED_ORIGINS', ''))));
 if (empty($allowedOrigins)) {
     $allowedOrigins = ['http://localhost:8000', 'http://localhost:8080'];
 }
-if ($origin && in_array($origin, $allowedOrigins, true)) {
+if ($origin && isAllowedOrigin($origin, $allowedOrigins)) {
     header('Access-Control-Allow-Origin: ' . $origin);
     header('Access-Control-Allow-Credentials: true');
     header('Vary: Origin');
@@ -240,10 +322,7 @@ function getRequestBaseUrl() {
 }
 
 function publicUploadUrl($relativePath) {
-    if (!$relativePath) return null;
-    if (preg_match('#^https?://#i', $relativePath)) return $relativePath;
-    $base = rtrim(getRequestBaseUrl(), '/');
-    return $base . '/backend/' . ltrim($relativePath, '/');
+    return storagePublicUrl($relativePath);
 }
 
 function auditLog($action, $targetType = null, $targetId = null, $meta = null) {
@@ -261,6 +340,8 @@ function auditLog($action, $targetType = null, $targetId = null, $meta = null) {
         logServerEvent('warn', 'audit_log_failed', ['error' => $e->getMessage()]);
     }
 }
+
+require_once __DIR__ . '/storage.php';
 
 logRequestStart();
 requireCsrfForStateChange();

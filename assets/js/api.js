@@ -1,5 +1,8 @@
 (function () {
-  var configuredBase = window.API_BASE_URL || localStorage.getItem('jp_api_base');
+  var API_BASE_KEY = 'jp_api_base';
+  var CSRF_TOKEN_KEY = 'jp_csrf_token';
+  var metaConfiguredBase = document.querySelector('meta[name="jp-api-base"]');
+  var configuredBase = window.API_BASE_URL || (metaConfiguredBase && metaConfiguredBase.content) || localStorage.getItem(API_BASE_KEY);
   var inferredBase = '';
   if (location.protocol.indexOf('http') === 0) {
     var path = location.pathname;
@@ -15,6 +18,19 @@
   }
 
   var baseUrl = (configuredBase || inferredBase).replace(/\/+$/, '');
+
+  function getStoredCsrfToken() {
+    return localStorage.getItem(CSRF_TOKEN_KEY) || getCookie('jp_csrf');
+  }
+
+  function setStoredCsrfToken(token) {
+    if (!token) return;
+    localStorage.setItem(CSRF_TOKEN_KEY, token);
+  }
+
+  function clearStoredCsrfToken() {
+    localStorage.removeItem(CSRF_TOKEN_KEY);
+  }
 
   function withQuery(path, query) {
     if (!query) return path;
@@ -42,6 +58,11 @@
         error.data = data;
         throw error;
       }
+      if (data.csrf_token) {
+        setStoredCsrfToken(data.csrf_token);
+      } else if (data.data && data.data.csrf_token) {
+        setStoredCsrfToken(data.data.csrf_token);
+      }
       return data;
     });
   }
@@ -64,7 +85,7 @@
     };
     var method = (fetchOpts.method || 'GET').toUpperCase();
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
-      var csrf = getCookie('jp_csrf');
+      var csrf = getStoredCsrfToken();
       if (csrf) fetchOpts.headers['X-CSRF-Token'] = csrf;
     }
 
@@ -86,7 +107,20 @@
     },
     setBaseUrl: function (next) {
       baseUrl = (next || '').replace(/\/+$/, '');
-      localStorage.setItem('jp_api_base', baseUrl);
+      if (baseUrl) {
+        localStorage.setItem(API_BASE_KEY, baseUrl);
+      } else {
+        localStorage.removeItem(API_BASE_KEY);
+      }
+    },
+    setCsrfToken: function (token) {
+      setStoredCsrfToken(token);
+    },
+    clearCsrfToken: function () {
+      clearStoredCsrfToken();
+    },
+    getCsrfToken: function () {
+      return getStoredCsrfToken();
     },
     login: function (payload) {
       return request('auth/login.php', { method: 'POST', body: payload });

@@ -3,6 +3,7 @@ require_once __DIR__ . '/../config/db.php';
 
 try {
     requireAuth(['job_seeker']);
+    $uploadedResumePath = null;
 
     $input_json = null;
     $job_id = isset($_POST['job_id']) ? (int)$_POST['job_id'] : (isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0);
@@ -53,18 +54,13 @@ try {
             throw new Exception("Invalid resume MIME type");
         }
         $filename = 'app_' . $_SESSION['user_id'] . '_' . $job_id . '_' . time() . '.' . $file_ext;
-        $upload_path = UPLOAD_DIR . 'resumes/' . $filename;
-        if (!is_dir(dirname($upload_path))) {
-            mkdir(dirname($upload_path), 0755, true);
-        }
-        if (move_uploaded_file($file['tmp_name'], $upload_path)) {
-            $resume_path = 'uploads/resumes/' . $filename;
-        }
+        $resume_path = storageUploadFile($file['tmp_name'], 'resumes', $filename);
+        $uploadedResumePath = $resume_path;
     } else {
         $stmt = $db->prepare("SELECT resume_path FROM users WHERE id = ?");
         $stmt->execute([$_SESSION['user_id']]);
         $u = $stmt->fetch();
-        if ($u && $u['resume_path'] && file_exists(__DIR__ . '/../' . $u['resume_path'])) {
+        if ($u && $u['resume_path'] && storageReferenceExists($u['resume_path'])) {
             $resume_path = $u['resume_path'];
         }
     }
@@ -84,6 +80,9 @@ try {
     ]);
 
 } catch (Exception $e) {
+    if (!empty($uploadedResumePath)) {
+        storageDeleteFile($uploadedResumePath);
+    }
     $code = http_response_code();
     if ($code === 200) {
         http_response_code(400);
