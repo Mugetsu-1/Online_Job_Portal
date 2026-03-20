@@ -1,72 +1,104 @@
 # Online Job Portal
 
 Semester 5 web technology project with:
-- Frontend: HTML, CSS, Bootstrap, vanilla JS
+- Frontend: static HTML, CSS, Bootstrap, vanilla JS
 - Backend: PHP REST-style endpoints
 - Database: PostgreSQL
+- Production target: Vercel frontend + Render backend + Supabase Postgres + Supabase Storage
 
-## Syllabus Coverage Notes
+## Current Deployment Model
 
-- Unit 1, Unit 2, Unit 3, Unit 4, and Unit 6 topics are covered in the project.
-- Unit 5 (AJAX/XML) is intentionally skipped for this project scope.
-- Syllabus wording references MySQL, but this implementation uses PostgreSQL (approved).
-- Syllabus compliance details are documented in this repository; project website UI remains focused on the job portal only.
+- `Supabase Postgres` stores application data
+- `Supabase Storage` stores resumes, profile pictures, and company logos
+- `Render` hosts the PHP backend
+- `Vercel` hosts the static frontend build
+- `Local Apache/PHP + local PostgreSQL` can still run the app for development
+- `scripts/sync_supabase_to_local.ps1` mirrors the Supabase database into local PostgreSQL for pgAdmin/local work
+
+Important:
+- The DB sync script only syncs PostgreSQL data.
+- Uploaded files are not copied by that script.
+- For local Apache, the simplest setup is to keep files in the same Supabase Storage bucket used by production.
 
 ## Project Structure
 
 ```text
 OnlineWebPortal/
-├── frontend/                         # UI pages
-├── assets/                           # CSS and JS
+├── frontend/                         # source HTML pages for local Apache
+├── assets/                           # shared CSS and JS
 ├── backend/                          # PHP APIs
 │   ├── auth/
 │   ├── jobs/
 │   ├── applications/
 │   ├── users/
 │   ├── config/
-│   │   ├── db.php                    # env-based DB config
+│   │   ├── db.php                    # env-based DB + session + CORS config
+│   │   ├── storage.php               # local/Supabase storage abstraction
 │   │   └── db.example.php
-│   └── seed.php                      # sets sample user passwords to Pass@1234
+│   └── seed.php                      # token-protected sample password reset helper
 ├── database/
 │   ├── job_portal.sql                # schema
 │   └── utilities.sql                 # optional sample utility data
 ├── scripts/
-│   ├── sync_supabase_to_local.ps1            # tracked demo script (placeholders)
-│   └── sync_supabase_to_local.local.ps1      # local-only script (gitignored)
-├── Dockerfile
-├── .dockerignore
+│   ├── build-frontend.mjs            # builds static frontend into dist/
+│   ├── sync_supabase_to_local.ps1    # tracked demo sync script
+│   └── sync_supabase_to_local.local.ps1
+├── vercel.json                       # Vercel build/output config
+├── Dockerfile                        # Render backend image
 └── README.md
 ```
 
 ## Environment Variables
 
-`backend/config/db.php` reads values from environment variables:
+Backend/runtime variables:
 
 - `DB_HOST`
-- `DB_PORT` (default: `5432`)
-- `DB_NAME` (default: `job_portal`)
+- `DB_PORT` default `5432`
+- `DB_NAME` default `job_portal`
 - `DB_USER`
 - `DB_PASSWORD`
-- `DB_SSLMODE` (default: `prefer`, use `require` for Supabase)
-- `BASE_URL` (default: `http://localhost:8080`)
-- `UPLOAD_DIR` (default: `backend/uploads`)
-- `ALLOWED_ORIGINS` (comma-separated CORS allowlist; default: `http://localhost:8000,http://localhost:8080`)
-- `APP_DEBUG` (set to `true` or `1` to show PHP errors locally)
+- `DB_SSLMODE` default `prefer`; use `require` for Supabase
+- `BASE_URL` default `http://localhost:8080`
+- `ALLOWED_ORIGINS` comma-separated CORS allowlist
+- `APP_DEBUG` set `true` or `1` to show PHP errors locally
+- `APP_LOG_FILE` optional log file path
 
-If an env var is missing, `db.php` uses a local fallback value.
+Session/cookie variables:
 
-## Local Run (Without Docker)
+- `SESSION_COOKIE_NAME` default `jp_session`
+- `SESSION_COOKIE_SAMESITE` default `Lax`
+- `SESSION_COOKIE_SECURE` default auto-detect; set `true` on Render
+- `SESSION_COOKIE_DOMAIN` optional, usually leave blank
+- `CSRF_COOKIE_ENABLED` default `true`
+
+Storage variables:
+
+- `STORAGE_DRIVER` `local` or `supabase`
+- `UPLOAD_DIR` local file directory, default `backend/uploads`
+- `SUPABASE_URL` your project URL, for example `https://xyzcompany.supabase.co`
+- `SUPABASE_SERVICE_ROLE_KEY` service-role key used by the backend to upload files
+- `SUPABASE_STORAGE_BUCKET` bucket name used for resumes/images
+
+Frontend build variable for Vercel:
+
+- `FRONTEND_API_BASE_URL` for example `https://your-service.onrender.com/backend`
+
+Admin helper variable:
+
+- `SEED_ENDPOINT_TOKEN` required if you want to call `backend/seed.php` over HTTP
+
+Notes:
+- If an env var is missing, `db.php` uses a local fallback where possible.
+- The current storage implementation expects `SUPABASE_STORAGE_BUCKET` to be a public bucket so uploaded file links can be returned directly.
+
+## Local Run (Apache or PHP Built-In Server)
+
+### Local database + local frontend/backend
 
 1. Ensure PHP has `pdo_pgsql`.
-2. Install frontend dependencies (Bootstrap, icons):
-
-```bash
-npm install
-```
-
-3. Create/import DB:
-   - Import `database/job_portal.sql` into PostgreSQL.
-4. Start server from repo root:
+2. Import `database/job_portal.sql` into local PostgreSQL.
+3. Set local env vars.
+4. Run from repo root with Apache or:
 
 ```bash
 php -S localhost:8000 -t .
@@ -76,25 +108,38 @@ php -S localhost:8000 -t .
    - Frontend: `http://localhost:8000/frontend/index.html`
    - API test: `http://localhost:8000/backend/jobs/fetch_jobs.php`
 
-## Render Deployment (Docker + Supabase)
+### Local Apache with pgAdmin-sync workflow
 
-1. Push repo to GitHub.
-2. In Render, create a Web Service from the repo (Dockerfile at repo root).
-3. Set env vars in Render:
-   - `DB_HOST`
-   - `DB_PORT`
-   - `DB_NAME`
-   - `DB_USER`
-   - `DB_PASSWORD`
-   - `DB_SSLMODE=require`
-   - `BASE_URL=https://<your-service>.onrender.com`
-   - `UPLOAD_DIR=/app/backend/uploads`
-4. Deploy.
-5. Test:
-   - `https://<your-service>.onrender.com/frontend/index.html`
-   - `https://<your-service>.onrender.com/backend/jobs/fetch_jobs.php`
-6. Run once:
-   - `https://<your-service>.onrender.com/backend/seed.php`
+Use this when you want:
+- live production DB in Supabase
+- local PostgreSQL in pgAdmin for development
+- local Apache/PHP for the app
+
+Recommended local env setup:
+
+- `DB_HOST=localhost`
+- `DB_PORT=5432`
+- `DB_NAME=job_portal`
+- `DB_USER=postgres`
+- `DB_PASSWORD=<your local password>`
+- `DB_SSLMODE=prefer`
+- `BASE_URL=http://localhost`
+- `ALLOWED_ORIGINS=http://localhost,http://127.0.0.1,http://localhost:8000`
+- `SESSION_COOKIE_SAMESITE=Lax`
+- `SESSION_COOKIE_SECURE=false`
+- `STORAGE_DRIVER=supabase`
+- `SUPABASE_URL=<your Supabase URL>`
+- `SUPABASE_SERVICE_ROLE_KEY=<your service role key>`
+- `SUPABASE_STORAGE_BUCKET=<your public bucket>`
+
+That setup gives you:
+- local PostgreSQL for pgAdmin/local queries
+- local PHP served by Apache
+- the same uploaded files as production via Supabase Storage
+
+If you want fully local files instead, set:
+- `STORAGE_DRIVER=local`
+- optionally `UPLOAD_DIR=<path>`
 
 ## Supabase -> Local PostgreSQL Sync
 
@@ -102,8 +147,8 @@ Use this when you want local pgAdmin DB to mirror live Supabase data.
 
 ### One-time prerequisites
 
-- Install PostgreSQL client tools (`pg_dump`, `pg_restore`).
-- Ensure they are in `PATH`.
+- Install PostgreSQL client tools `pg_dump` and `pg_restore`
+- Ensure they are in `PATH`
 
 ### Run sync
 
@@ -114,11 +159,80 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\scripts\sync_supabase_to_local.local.ps1
 ```
 
-The script does:
-1. Dump Supabase DB (public schema only).
-2. Restore snapshot into local DB (`job_portal` by default).
+The script:
+1. Dumps Supabase `public` schema data
+2. Restores it into local PostgreSQL
 
-After run, refresh tables in pgAdmin.
+After the run, refresh tables in pgAdmin.
+
+## Production Deployment
+
+### 1. Supabase
+
+Create:
+- a Supabase Postgres project
+- a public Storage bucket, for example `job-portal-assets`
+
+### 2. Render backend
+
+Create a Render Web Service from this repo using the root `Dockerfile`.
+
+Set these env vars in Render:
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_SSLMODE=require`
+- `BASE_URL=https://<your-service>.onrender.com`
+- `ALLOWED_ORIGINS=https://<your-project>.vercel.app`
+- `SESSION_COOKIE_SAMESITE=None`
+- `SESSION_COOKIE_SECURE=true`
+- `STORAGE_DRIVER=supabase`
+- `SUPABASE_URL=https://<your-project>.supabase.co`
+- `SUPABASE_SERVICE_ROLE_KEY=<service role key>`
+- `SUPABASE_STORAGE_BUCKET=job-portal-assets`
+- `SEED_ENDPOINT_TOKEN=<random long secret>`
+
+Optional:
+- `APP_DEBUG=false`
+- `APP_LOG_FILE=/app/backend/logs/app.log`
+
+### 3. Vercel frontend
+
+This repo includes:
+- `vercel.json`
+- `npm run build:frontend`
+- `scripts/build-frontend.mjs`
+
+The build copies frontend pages into `dist/`, rewrites asset paths, and generates `runtime-config.js`.
+
+Set this Vercel env var:
+
+- `FRONTEND_API_BASE_URL=https://<your-service>.onrender.com/backend`
+
+Deploy the repo to Vercel. The output directory is `dist`, so the frontend is served from:
+
+- `/`
+- `/login.html`
+- `/register.html`
+- `/jobs.html`
+- etc.
+
+### 4. Seed sample users
+
+For CLI:
+
+```bash
+php backend/seed.php
+```
+
+For HTTP:
+
+```text
+https://<your-service>.onrender.com/backend/seed.php?token=<SEED_ENDPOINT_TOKEN>
+```
 
 ## API Areas
 
@@ -131,19 +245,22 @@ Base path: `/backend`
 
 ## Sample Users
 
-After running `backend/seed.php`, sample users are:
+After running the seed helper, sample users are:
 
 - `jobseeker@example.com`
 - `employer@example.com`
 - `admin@example.com`
 
+The sample password is reset to `Pass@1234`.
+
 ## Security Notes
 
-- Never commit real DB credentials.
-- Keep secrets only in platform env vars (Render/Supabase/local machine).
+- Never commit real DB credentials, service-role keys, or seed tokens.
+- Keep secrets only in platform env vars or local untracked files.
 - `scripts/sync_supabase_to_local.local.ps1` is intentionally gitignored.
 - `backend/config/db.php` is committed in env-based form and must not contain hardcoded passwords.
-- If you need local-only credentials, use local override files such as `backend/config/db.local.php` or `*.local.ps1` (ignored by git).
+- `backend/seed.php` is now disabled over HTTP unless `SEED_ENDPOINT_TOKEN` is configured.
+- With the current implementation, files in `SUPABASE_STORAGE_BUCKET` are expected to be publicly readable. If you later want private resumes, add signed URL support.
 
 ## License
 

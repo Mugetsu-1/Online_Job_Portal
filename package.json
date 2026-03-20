@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "build:frontend": "node scripts/build-frontend.mjs"
+  },
   "dependencies": {
     "bootstrap": "^5.3.8"
   },

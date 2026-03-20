@@ -3,7 +3,7 @@
     JobPortalAPI.getJobs({ page: 1, limit: 50 }).then(function (res) {
       var user = JobPortalCommon.getUser();
       var owned = (res.data || []).filter(function (job) {
-        return (job.company_name || '').toLowerCase() === (user.company_name || '').toLowerCase();
+        return Number(job.employer_id) === Number(user.id);
       });
       var host = document.getElementById('jobsPanel');
       if (!owned.length) {

@@ -49,7 +49,7 @@ try {
 
     $params[] = $limit;
     $params[] = $offset;
-    $sql = "SELECT j.id, j.title, j.description, j.job_type, j.location, j.salary_min, j.salary_max, j.salary_currency, j.experience_required, j.positions_available, j.application_deadline, j.views_count, j.applications_count, j.created_at, u.company_name, u.company_logo FROM jobs j JOIN users u ON j.employer_id = u.id WHERE $where_sql ORDER BY j.created_at DESC LIMIT ? OFFSET ?";
+    $sql = "SELECT j.id, j.employer_id, j.title, j.description, j.job_type, j.location, j.salary_min, j.salary_max, j.salary_currency, j.experience_required, j.positions_available, j.application_deadline, j.views_count, j.applications_count, j.created_at, u.company_name, u.company_logo FROM jobs j JOIN users u ON j.employer_id = u.id WHERE $where_sql ORDER BY j.created_at DESC LIMIT ? OFFSET ?";
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
     $jobs = $stmt->fetchAll();

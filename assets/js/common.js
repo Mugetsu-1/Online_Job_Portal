@@ -17,6 +17,9 @@
 
   function clearUser() {
     localStorage.removeItem(USER_KEY);
+    if (window.JobPortalAPI && typeof window.JobPortalAPI.clearCsrfToken === 'function') {
+      window.JobPortalAPI.clearCsrfToken();
+    }
   }
 
   function setCookie(name, value, days) {

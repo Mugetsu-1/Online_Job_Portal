@@ -25,8 +25,12 @@
       JobPortalAPI.login(payload)
         .then(function (res) {
           var user = res.user || (res.data && res.data.user);
+          var csrf = res.csrf_token || (res.data && res.data.csrf_token);
           if (!user) {
             throw new Error('Invalid login response');
+          }
+          if (csrf && JobPortalAPI.setCsrfToken) {
+            JobPortalAPI.setCsrfToken(csrf);
           }
           JobPortalCommon.setUser(user);
           location.href = 'dashboard.html';
