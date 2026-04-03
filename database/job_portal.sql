@@ -185,11 +185,56 @@ CREATE TRIGGER update_applications_count
     EXECUTE FUNCTION update_job_application_count();
 
 -- Insert sample data
+-- Demo accounts use password: Pass@1234
 INSERT INTO users (email, password_hash, role, full_name, phone, company_name, company_description) VALUES
-('employer@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'employer', 'Tech Corp HR', '9841123456', 'Tech Corp', 'Leading technology company'),
-('admin@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'admin', 'Admin User', '9746123456', NULL, NULL);
+('employer@example.com', '$2b$12$3PGD0Jqp74MLeEgb80L1Xeo7THB.SPF1nSGt4zL7GB4mhxdQHygfm', 'employer', 'Tech Corp HR', '9841123456', 'Tech Corp', 'Leading technology company'),
+('admin@example.com', '$2b$12$3PGD0Jqp74MLeEgb80L1Xeo7THB.SPF1nSGt4zL7GB4mhxdQHygfm', 'admin', 'Admin User', '9746123456', NULL, NULL);
 
 INSERT INTO users (email, password_hash, role, full_name, phone, skills, experience_years, education) VALUES
-('jobseeker@example.com', '$2y$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'job_seeker', 'John Doe', '9841000001', 'PHP, JavaScript, PostgreSQL', 3, 'Bachelor in Computer Science');
+('jobseeker@example.com', '$2b$12$3PGD0Jqp74MLeEgb80L1Xeo7THB.SPF1nSGt4zL7GB4mhxdQHygfm', 'job_seeker', 'John Doe', '9841000001', 'PHP, JavaScript, PostgreSQL', 3, 'Bachelor in Computer Science');
 
--- Sample users are included in the schema with bcrypt password hashes.
+INSERT INTO jobs (
+    employer_id, title, description, requirements, responsibilities, job_type, location,
+    salary_min, salary_max, salary_currency, experience_required, education_required,
+    skills_required, application_deadline, positions_available, is_active
+) VALUES
+(
+    1,
+    'Junior PHP Developer',
+    'Build and maintain backend features for the local job portal project.',
+    'Basic PHP and PostgreSQL knowledge. Comfortable reading existing code.',
+    'Implement endpoints, test features, and fix bugs reported by the team.',
+    'full_time',
+    'Kathmandu',
+    40000,
+    65000,
+    'NPR',
+    1,
+    'Bachelor in Computer Science',
+    'PHP, PostgreSQL, JavaScript',
+    CURRENT_DATE + 30,
+    2,
+    true
+),
+(
+    1,
+    'UI/UX Intern',
+    'Support frontend improvements for the portal and prepare simple interface updates.',
+    'Basic understanding of HTML, CSS, and design tools.',
+    'Assist with interface tweaks, feedback collection, and page cleanup.',
+    'internship',
+    'Lalitpur',
+    15000,
+    20000,
+    'NPR',
+    0,
+    'Undergraduate student',
+    'Figma, HTML, CSS',
+    CURRENT_DATE + 20,
+    1,
+    false
+);
+
+INSERT INTO applications (job_id, applicant_id, cover_letter, status)
+VALUES
+(1, 3, 'I have experience with PHP and PostgreSQL and would like to contribute to this project.', 'pending');

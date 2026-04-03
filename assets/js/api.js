@@ -118,6 +118,21 @@
     getJobs: function (query) {
       return request('jobs/fetch_jobs.php', { query: query });
     },
+    getAdminJobs: function (query) {
+      return request('admin/jobs.php', { query: query });
+    },
+    getAdminStats: function () {
+      return request('admin/stats.php');
+    },
+    getAdminUsers: function (query) {
+      return request('admin/users.php', { query: query });
+    },
+    updateAdminJobStatus: function (payload) {
+      return request('admin/toggle_job.php', { method: 'PUT', body: payload });
+    },
+    updateAdminUserStatus: function (payload) {
+      return request('admin/toggle_user.php', { method: 'PUT', body: payload });
+    },
     getJobDetails: function (id) {
       return request('jobs/job_details.php', { query: { id: id } });
     },
