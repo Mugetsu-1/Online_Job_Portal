@@ -1,6 +1,6 @@
 # Online Job Portal
 
-A simple job portal built with static frontend pages, a PHP backend, and PostgreSQL. The project is intended to run locally on Apache/XAMPP and stores uploaded files on the local filesystem.
+A simple job portal built with static frontend pages, a PHP backend, and PostgreSQL. This version is meant to run locally on Apache/XAMPP and stores uploaded files on the local filesystem.
 
 ## Stack
 
@@ -16,17 +16,16 @@ A simple job portal built with static frontend pages, a PHP backend, and Postgre
 OnlineWebPortal/
 ├── frontend/              # HTML pages
 ├── assets/                # CSS, JS, images, icons
-├── backend/               # PHP API endpoints and local uploads
+├── backend/               # PHP API endpoints, config, logs, uploads
 │   ├── auth/
 │   ├── jobs/
 │   ├── applications/
 │   ├── users/
 │   ├── config/
 │   ├── uploads/
-│   └── .htaccess
+│   └── logs/
 ├── database/
 │   └── job_portal.sql
-├── .env                   # local config
 └── README.md
 ```
 
@@ -36,25 +35,14 @@ OnlineWebPortal/
 2. Enable `pdo_pgsql` and `pgsql` in XAMPP PHP.
 3. Create a PostgreSQL database named `job_portal`.
 4. Import [job_portal.sql](/d:/OnlineWebPortal/database/job_portal.sql).
-5. Create or update `.env` in the project root:
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=job_portal
-DB_USER=postgres
-DB_PASSWORD=your_password
-BASE_URL=http://localhost/OnlineWebPortal
-APP_DEBUG=true
-```
-
+5. Update the database settings in [db.php](/d:/OnlineWebPortal/backend/config/db.php) if your local PostgreSQL username or password is different.
 6. Start Apache from XAMPP.
 7. Open `http://localhost/OnlineWebPortal/frontend/index.html`.
 
 ## Notes
 
 - Uploaded resumes, profile pictures, and logos are stored under `backend/uploads/`.
-- The backend reads configuration from the root `.env` file.
+- Database settings are currently configured directly in [db.php](/d:/OnlineWebPortal/backend/config/db.php).
 - The main database schema is in [job_portal.sql](/d:/OnlineWebPortal/database/job_portal.sql).
 
 ## License
