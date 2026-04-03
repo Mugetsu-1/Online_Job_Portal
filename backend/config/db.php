@@ -1,6 +1,57 @@
 <?php
 require_once __DIR__ . '/response.php';
 
+function loadProjectEnv() {
+    static $loaded = false;
+    if ($loaded) {
+        return;
+    }
+    $loaded = true;
+
+    $envPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env';
+    if (!is_file($envPath) || !is_readable($envPath)) {
+        return;
+    }
+
+    $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) {
+        return;
+    }
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#') {
+            continue;
+        }
+
+        $separatorPos = strpos($line, '=');
+        if ($separatorPos === false) {
+            continue;
+        }
+
+        $key = trim(substr($line, 0, $separatorPos));
+        if ($key === '' || getenv($key) !== false) {
+            continue;
+        }
+
+        $value = trim(substr($line, $separatorPos + 1));
+        $valueLength = strlen($value);
+        if ($valueLength >= 2) {
+            $first = $value[0];
+            $last = $value[$valueLength - 1];
+            if (($first === '"' && $last === '"') || ($first === "'" && $last === "'")) {
+                $value = substr($value, 1, -1);
+            }
+        }
+
+        putenv($key . '=' . $value);
+        $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
+    }
+}
+
+loadProjectEnv();
+
 function envOrDefault($key, $default) {
     $value = getenv($key);
     if ($value === false || $value === '') {
@@ -9,23 +60,7 @@ function envOrDefault($key, $default) {
     return $value;
 }
 
-function envBool($key, $default = false) {
-    $value = getenv($key);
-    if ($value === false || $value === '') {
-        return $default;
-    }
-    return in_array(strtolower(trim((string)$value)), ['1', 'true', 'yes', 'on'], true);
-}
-
-function normalizeSameSite($value, $default = 'Lax') {
-    $normalized = ucfirst(strtolower(trim((string)$value)));
-    return in_array($normalized, ['Lax', 'Strict', 'None'], true) ? $normalized : $default;
-}
-
 function currentRequestIsHttps() {
-    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-        return strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0])) === 'https';
-    }
     if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
         return true;
     }
@@ -40,18 +75,16 @@ define('DB_PORT', envOrDefault('DB_PORT', '5432'));
 define('DB_NAME', envOrDefault('DB_NAME', 'job_portal'));
 define('DB_USER', envOrDefault('DB_USER', 'postgres'));
 define('DB_PASSWORD', envOrDefault('DB_PASSWORD', ''));
-define('DB_SSLMODE', envOrDefault('DB_SSLMODE', 'prefer'));
-define('BASE_URL', envOrDefault('BASE_URL', 'http://localhost:8080'));
+define('BASE_URL', envOrDefault('BASE_URL', 'http://localhost'));
 define('UPLOAD_DIR', envOrDefault('UPLOAD_DIR', __DIR__ . '/../uploads/'));
 define('APP_LOG_FILE', envOrDefault('APP_LOG_FILE', __DIR__ . '/../logs/app.log'));
 define('MAX_FILE_SIZE', 5 * 1024 * 1024);
 define('ALLOWED_FILE_TYPES', ['pdf', 'doc', 'docx']);
 define('SESSION_LIFETIME', 3600 * 24);
-define('SESSION_COOKIE_NAME', envOrDefault('SESSION_COOKIE_NAME', 'jp_session'));
-define('SESSION_COOKIE_SAMESITE', normalizeSameSite(envOrDefault('SESSION_COOKIE_SAMESITE', 'Lax')));
-define('SESSION_COOKIE_SECURE', envBool('SESSION_COOKIE_SECURE', currentRequestIsHttps()));
-define('SESSION_COOKIE_DOMAIN', trim((string)envOrDefault('SESSION_COOKIE_DOMAIN', '')));
-define('CSRF_COOKIE_ENABLED', envBool('CSRF_COOKIE_ENABLED', true));
+define('SESSION_COOKIE_NAME', 'jp_session');
+define('SESSION_COOKIE_SAMESITE', 'Lax');
+define('SESSION_COOKIE_SECURE', currentRequestIsHttps());
+define('CSRF_COOKIE_ENABLED', true);
 error_reporting(E_ALL);
 $debug = strtolower(envOrDefault('APP_DEBUG', ''));
 ini_set('display_errors', ($debug === '1' || $debug === 'true') ? 1 : 0);
@@ -62,7 +95,7 @@ class Database {
 
     private function __construct() {
         try {
-            $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=" . DB_SSLMODE;
+            $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME;
             $this->connection = new PDO($dsn, DB_USER, DB_PASSWORD);
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
@@ -96,16 +129,12 @@ function getDB() {
 }
 
 function baseCookieOptions($httpOnly = true) {
-    $options = [
+    return [
         'path' => '/',
         'secure' => SESSION_COOKIE_SECURE,
         'httponly' => $httpOnly,
         'samesite' => SESSION_COOKIE_SAMESITE
     ];
-    if (SESSION_COOKIE_DOMAIN !== '') {
-        $options['domain'] = SESSION_COOKIE_DOMAIN;
-    }
-    return $options;
 }
 
 function setAppCookie($name, $value, $options = []) {
@@ -123,21 +152,6 @@ function clearAppCookie($name, $options = []) {
         'expires' => time() - 3600
     ]);
     return setcookie($name, '', $cookieOptions);
-}
-
-function isAllowedOrigin($origin, $allowedOrigins) {
-    foreach ($allowedOrigins as $pattern) {
-        if ($origin === $pattern) {
-            return true;
-        }
-        if (strpos($pattern, '*') !== false) {
-            $regex = '#^' . str_replace('\*', '[^.]+', preg_quote($pattern, '#')) . '$#i';
-            if (preg_match($regex, $origin) === 1) {
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 ini_set('session.use_only_cookies', '1');
@@ -158,30 +172,9 @@ if (CSRF_COOKIE_ENABLED) {
     ]);
 }
 
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowedOrigins = array_filter(array_map('trim', explode(',', envOrDefault('ALLOWED_ORIGINS', ''))));
-if (empty($allowedOrigins)) {
-    $allowedOrigins = ['http://localhost:8000', 'http://localhost:8080'];
-}
-if ($origin && isAllowedOrigin($origin, $allowedOrigins)) {
-    header('Access-Control-Allow-Origin: ' . $origin);
-    header('Access-Control-Allow-Credentials: true');
-    header('Vary: Origin');
-}
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token');
 header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
 function getClientIp() {
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $parts = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        return trim($parts[0]);
-    }
     return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 }
 
@@ -308,14 +301,14 @@ function validateUploadedMime($tmpPath, $allowedMimes) {
 }
 
 function getRequestBaseUrl() {
-    $scheme = 'http';
-    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-        $scheme = trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]);
-    } elseif (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
-        $scheme = 'https';
-    }
-    $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? '';
-    if ($host) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    if ($host !== '') {
+        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        $backendPos = strpos($scriptName, '/backend/');
+        if ($backendPos !== false) {
+            return $scheme . '://' . $host . substr($scriptName, 0, $backendPos);
+        }
         return $scheme . '://' . $host;
     }
     return rtrim(BASE_URL, '/');
