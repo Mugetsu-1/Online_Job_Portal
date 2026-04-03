@@ -4,14 +4,22 @@
 .env.*.local
 
 # Upload directories
-uploads/*
-!uploads/.gitkeep
 backend/uploads/*
 !backend/uploads/.gitkeep
+!backend/uploads/resumes/
+backend/uploads/resumes/*
+!backend/uploads/resumes/.gitkeep
+!backend/uploads/profiles/
+backend/uploads/profiles/*
+!backend/uploads/profiles/.gitkeep
+!backend/uploads/logos/
+backend/uploads/logos/*
+!backend/uploads/logos/.gitkeep
 
 # Logs
+backend/logs/*
+!backend/logs/.gitkeep
 *.log
-logs/
 *.log.*
 
 # OS generated files
@@ -38,11 +46,6 @@ Thumbs.db
 # Composer
 /vendor/
 composer.lock
-
-# NPM (if using any frontend build tools)
-node_modules/
-npm-debug.log
-yarn-error.log
 
 # Temporary files
 tmp/
@@ -75,13 +78,10 @@ certificates/
 *.key
 *.p12
 *.pfx
-backend/config/db.local.php
 backend/config/*secret*.php
-scripts/*.local.ps1
 
 # Documentation build
 docs/_build/
-dist/
 
 # Test coverage
 coverage/

@@ -1,23 +1,18 @@
 (function () {
-  var API_BASE_KEY = 'jp_api_base';
   var CSRF_TOKEN_KEY = 'jp_csrf_token';
-  var metaConfiguredBase = document.querySelector('meta[name="jp-api-base"]');
-  var configuredBase = window.API_BASE_URL || (metaConfiguredBase && metaConfiguredBase.content) || localStorage.getItem(API_BASE_KEY);
-  var inferredBase = '';
-  if (location.protocol.indexOf('http') === 0) {
+
+  function inferBaseUrl() {
     var path = location.pathname;
     if (path.indexOf('/frontend/') !== -1) {
-      inferredBase = location.origin + path.split('/frontend/')[0] + '/backend';
-    } else if (path.indexOf('/backend/') !== -1) {
-      inferredBase = location.origin + path.split('/backend/')[0] + '/backend';
-    } else {
-      inferredBase = location.origin + '/backend';
+      return location.origin + path.split('/frontend/')[0] + '/backend';
     }
-  } else {
-    inferredBase = 'http://localhost:8000';
+    if (path.indexOf('/backend/') !== -1) {
+      return location.origin + path.split('/backend/')[0] + '/backend';
+    }
+    return location.origin + '/backend';
   }
 
-  var baseUrl = (configuredBase || inferredBase).replace(/\/+$/, '');
+  var baseUrl = inferBaseUrl().replace(/\/+$/, '');
 
   function getStoredCsrfToken() {
     return localStorage.getItem(CSRF_TOKEN_KEY) || getCookie('jp_csrf');
@@ -102,17 +97,6 @@
   }
 
   var api = {
-    getBaseUrl: function () {
-      return baseUrl;
-    },
-    setBaseUrl: function (next) {
-      baseUrl = (next || '').replace(/\/+$/, '');
-      if (baseUrl) {
-        localStorage.setItem(API_BASE_KEY, baseUrl);
-      } else {
-        localStorage.removeItem(API_BASE_KEY);
-      }
-    },
     setCsrfToken: function (token) {
       setStoredCsrfToken(token);
     },
