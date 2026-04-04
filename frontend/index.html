@@ -33,8 +33,9 @@
 
     <!-- Hero -->
     <section class="hero-section mb-6">
-      <div class="hero-grid">
-        <div>
+      <div class="hero-grid" id="heroContent">
+        <!-- Default content for non-logged-in users -->
+        <div id="defaultHero">
           <div class="hero-eyebrow">Find · Apply · Grow</div>
           <h1 class="hero-title">Find your next<br><em>opportunity</em></h1>
           <p class="hero-sub">Browse curated jobs, apply in minutes, and track every application — all in one place.</p>
@@ -43,7 +44,44 @@
             <a href="register.html" class="btn btn-ghost btn-lg">Create Account</a>
           </div>
         </div>
-        <div class="employer-card reveal">
+
+        <!-- Job Seeker Hero -->
+        <div id="seekerHero" class="hidden">
+          <div class="hero-eyebrow">Welcome Back, Job Seeker</div>
+          <h1 class="hero-title">Your next <em>opportunity</em> awaits</h1>
+          <p class="hero-sub">Browse new positions and track your applications.</p>
+          <div class="flex gap-2 flex-wrap">
+            <a href="jobs.html" class="btn btn-primary btn-lg">🔍 Browse Jobs</a>
+            <a href="dashboard.html" class="btn btn-ghost btn-lg">📊 My Applications</a>
+            <a href="profile.html" class="btn btn-ghost btn-lg">📄 Update Resume</a>
+          </div>
+        </div>
+
+        <!-- Employer Hero -->
+        <div id="employerHero" class="hidden">
+          <div class="hero-eyebrow">Welcome Back, Employer</div>
+          <h1 class="hero-title">Find the right <em>talent</em></h1>
+          <p class="hero-sub">Post jobs, review applications, and build your team.</p>
+          <div class="flex gap-2 flex-wrap">
+            <a href="dashboard.html" class="btn btn-primary btn-lg">📝 Post a Job</a>
+            <a href="dashboard.html" class="btn btn-ghost btn-lg">📋 Manage Jobs</a>
+            <a href="profile.html#section-company" class="btn btn-ghost btn-lg">🏢 Company Profile</a>
+          </div>
+        </div>
+
+        <!-- Admin Hero -->
+        <div id="adminHero" class="hidden">
+          <div class="hero-eyebrow">Admin Dashboard</div>
+          <h1 class="hero-title">Platform <em>Overview</em></h1>
+          <p class="hero-sub">Manage users, jobs, and monitor platform activity.</p>
+          <div class="flex gap-2 flex-wrap">
+            <a href="dashboard.html" class="btn btn-primary btn-lg">⚙️ Admin Dashboard</a>
+            <a href="profile.html" class="btn btn-ghost btn-lg">👤 My Profile</a>
+          </div>
+        </div>
+
+        <!-- Employer card (shown only to non-logged-in users) -->
+        <div class="employer-card reveal" id="employerCTA">
           <h3>For Employers</h3>
           <p>Post roles, review applications, and find the right talent faster.</p>
           <a href="register.html?role=employer" class="btn btn-accent">Start Hiring →</a>
@@ -70,23 +108,41 @@
   </main>
 
   <script src="portal-common.js"></script>
+  <script src="../assets/js/common.js"></script>
   <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/jobs.js"></script>
   <script>
+    // Show role-based hero
+    const user = getUser();
+    if (user) {
+      document.getElementById('defaultHero').classList.add('hidden');
+      document.getElementById('employerCTA').classList.add('hidden');
+      
+      if (user.role === 'job_seeker') {
+        document.getElementById('seekerHero').classList.remove('hidden');
+      } else if (user.role === 'employer') {
+        document.getElementById('employerHero').classList.remove('hidden');
+      } else if (user.role === 'admin') {
+        document.getElementById('adminHero').classList.remove('hidden');
+      }
+    }
+
+    // Load featured jobs for homepage
     async function loadFeatured() {
       const grid = document.getElementById('featuredJobs');
       grid.innerHTML = skeletonCards(6);
       try {
-        // Replace with actual API call: const data = await api.getJobs({limit:6});
-        const data = { jobs: [] }; // placeholder
-        if (!data.jobs || data.jobs.length === 0) {
+        const res = await JobPortalAPI.getJobs({limit: 6});
+        const jobs = res.data || [];
+        if (!jobs.length) {
           grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
             <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             <p>No jobs yet — check back soon.</p>
           </div>`;
           document.getElementById('statJobs').textContent = '0';
         } else {
-          grid.innerHTML = data.jobs.slice(0,6).map(jobCard).join('');
-          document.getElementById('statJobs').textContent = data.total || data.jobs.length;
+          grid.innerHTML = jobs.slice(0, 6).map(jobCard).join('');
+          document.getElementById('statJobs').textContent = res.pagination?.total || jobs.length;
           initReveal();
         }
       } catch(e) {
