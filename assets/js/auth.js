@@ -48,8 +48,14 @@
   function roleFields(role) {
     var seeker = document.getElementById('jobSeekerFields');
     var employer = document.getElementById('employerFields');
-    if (seeker) seeker.style.display = role === 'job_seeker' ? 'block' : 'none';
-    if (employer) employer.style.display = role === 'employer' ? 'block' : 'none';
+    if (seeker) {
+      seeker.classList.toggle('hidden', role !== 'job_seeker');
+      seeker.style.display = role === 'job_seeker' ? 'block' : 'none';
+    }
+    if (employer) {
+      employer.classList.toggle('hidden', role !== 'employer');
+      employer.style.display = role === 'employer' ? 'block' : 'none';
+    }
   }
 
   function initRegister() {
