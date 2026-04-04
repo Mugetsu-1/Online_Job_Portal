@@ -123,6 +123,7 @@
   </main>
 
   <script src="portal-common.js"></script>
+  <script src="../assets/js/common.js"></script>
   <script src="../assets/js/api.js"></script>
   <script>
     // Char counter
@@ -155,22 +156,24 @@
 
     // Load job info
     async function loadJob() {
-      const id = new URLSearchParams(location.search).get('id');
+      const id = new URLSearchParams(location.search).get('job_id') || new URLSearchParams(location.search).get('id');
       if (!id) return;
       document.getElementById('job_id').value = id;
       try {
-        // const job = await api.getJob(id);
-        const job = null; // placeholder
+        const res = await JobPortalAPI.getJobDetails(id);
+        const job = res.data;
         if (!job) return;
         document.getElementById('jobSummaryPanel').innerHTML = `
-          <div style="font-family:'Fraunces',serif;font-size:1rem;margin-bottom:4px;">${job.title}</div>
-          <div class="text-sm text-muted mb-2">${job.employer_name || ''}</div>
+          <div style="font-family:'Fraunces',serif;font-size:1rem;margin-bottom:4px;">${JobPortalCommon.escapeHtml(job.title)}</div>
+          <div class="text-sm text-muted mb-2">${JobPortalCommon.escapeHtml(job.company_name || '')}</div>
           <div class="flex gap-2 flex-wrap">
-            ${job.job_type ? `<span class="badge">${formatJobType(job.job_type)}</span>` : ''}
-            ${job.location ? `<span class="badge badge-gray">${job.location}</span>` : ''}
+            ${job.job_type ? `<span class="badge">${JobPortalCommon.escapeHtml(job.job_type)}</span>` : ''}
+            ${job.location ? `<span class="badge badge-gray">${JobPortalCommon.escapeHtml(job.location)}</span>` : ''}
           </div>`;
-        document.getElementById('jobSummaryBadge').innerHTML = `<div class="job-pill">Applying to: ${job.title}</div>`;
-      } catch {}
+        document.getElementById('jobSummaryBadge').innerHTML = `<div class="job-pill">Applying to: ${JobPortalCommon.escapeHtml(job.title)}</div>`;
+      } catch(e) {
+        console.error('Failed to load job', e);
+      }
     }
     loadJob();
   </script>
