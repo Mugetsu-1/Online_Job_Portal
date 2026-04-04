@@ -32,12 +32,12 @@ function buildNav() {
 }
 
 function getUser() {
-  try { return JSON.parse(localStorage.getItem('portal_user')); } catch { return null; }
+  try { return JSON.parse(localStorage.getItem('jp_user')); } catch { return null; }
 }
 function getToken() { return localStorage.getItem('portal_token'); }
 
 function portalLogout() {
-  localStorage.removeItem('portal_user');
+  localStorage.removeItem('jp_user');
   localStorage.removeItem('portal_token');
   window.location.href = 'login.html';
 }
@@ -130,6 +130,7 @@ function initReveal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Render the navigation bar
   buildNav();
   setTimeout(initReveal, 100);
 });
