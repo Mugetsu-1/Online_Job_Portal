@@ -110,6 +110,11 @@ nav.portal-nav {
 }
 .btn-ghost:hover { background: var(--border); opacity: 1; }
 
+.btn-warn {
+  background: var(--warn); color: #fff; border-color: var(--warn);
+}
+.btn-warn:hover { background: #b87409; border-color: #b87409; opacity: 1; }
+
 .btn-sm { padding: 6px 14px; font-size: 13px; }
 .btn-lg { padding: 13px 28px; font-size: 15px; }
 .btn-block { width: 100%; }
