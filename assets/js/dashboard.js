@@ -22,12 +22,39 @@
     return '<div class="summary-card"><div class="summary-label">' + JobPortalCommon.escapeHtml(label) + '</div><div class="summary-value">' + JobPortalCommon.escapeHtml(value) + '</div></div>';
   }
 
+  function updateStats(stats) {
+    var statsRow = document.getElementById('statsRow');
+    if (!statsRow) return;
+    var cards = statsRow.querySelectorAll('.stat-card');
+    var entries = Object.entries(stats);
+    for (var i = 0; i < cards.length && i < entries.length; i++) {
+      var numEl = cards[i].querySelector('.stat-num');
+      var lblEl = cards[i].querySelector('.stat-lbl');
+      if (numEl) {
+        numEl.classList.remove('skeleton');
+        numEl.textContent = entries[i][1];
+      }
+      if (lblEl) {
+        lblEl.textContent = entries[i][0];
+      }
+    }
+  }
+
   function loadEmployerJobs() {
     JobPortalAPI.getJobs({ page: 1, limit: 50 }).then(function (res) {
       var user = JobPortalCommon.getUser();
       var owned = (res.data || []).filter(function (job) {
         return Number(job.employer_id) === Number(user.id);
       });
+      
+      // Update stats for employer
+      updateStats({
+        'Posted Jobs': owned.length,
+        'Active': owned.filter(function(j) { return j.is_active; }).length,
+        'Closed': owned.filter(function(j) { return !j.is_active; }).length,
+        'Total Views': '—'
+      });
+      
       var host = document.getElementById('jobsPanel');
       if (!owned.length) {
         host.innerHTML = '<p class="muted">No jobs posted yet.</p>';
@@ -65,6 +92,17 @@
         var user = JobPortalCommon.getUser();
         var host = document.getElementById('applicationsPanel');
         var apps = res.data || [];
+        
+        // Update stats for job seeker
+        if (user.role === 'job_seeker') {
+          updateStats({
+            'Applications': apps.length,
+            'Pending': apps.filter(function(a) { return a.status === 'pending'; }).length,
+            'Reviewed': apps.filter(function(a) { return a.status === 'reviewed' || a.status === 'shortlisted'; }).length,
+            'Accepted': apps.filter(function(a) { return a.status === 'accepted'; }).length
+          });
+        }
+        
         if (!apps.length) {
           host.innerHTML = '<p class="muted">No applications found.</p>';
           return;
@@ -124,16 +162,20 @@
     JobPortalAPI.getAdminStats()
       .then(function (res) {
         var stats = res.data || {};
-        var host = document.getElementById('adminStatsPanel');
-        host.innerHTML =
-          adminStatCard('Users', stats.total_users || 0) +
-          adminStatCard('Job Seekers', stats.total_job_seekers || 0) +
-          adminStatCard('Employers', stats.total_employers || 0) +
-          adminStatCard('Jobs', stats.total_jobs || 0) +
-          adminStatCard('Active Jobs', stats.active_jobs || 0) +
-          adminStatCard('Applications', stats.total_applications || 0) +
-          adminStatCard('Pending', stats.pending_applications || 0) +
-          adminStatCard('Active Users', stats.active_users || 0);
+        
+        // Update main stats row for admin
+        updateStats({
+          'Total Users': stats.total_users || 0,
+          'Total Jobs': stats.total_jobs || 0,
+          'Applications': stats.total_applications || 0,
+          'Active Jobs': stats.active_jobs || 0
+        });
+        
+        // Update detailed admin stats
+        document.getElementById('adminStatUsers').textContent = stats.total_users || 0;
+        document.getElementById('adminStatJobs').textContent = stats.total_jobs || 0;
+        document.getElementById('adminStatApps').textContent = stats.total_applications || 0;
+        document.getElementById('adminStatActive').textContent = stats.active_jobs || 0;
       })
       .catch(function (err) {
         renderAlertRetry(err.message || 'Unable to load admin stats', 'retryAdminStats', 'Retry', loadAdminStats);
@@ -326,40 +368,55 @@
     var user = JobPortalCommon.ensureAuth(['job_seeker', 'employer', 'admin']);
     if (!user) return;
 
-    document.getElementById('welcomeText').textContent = user.full_name + ' (' + user.role + ')';
+    document.getElementById('welcomeText').textContent = 'Welcome, ' + (user.full_name || user.email);
+    document.getElementById('welcomeSub').textContent = 'Your ' + user.role.replace('_', ' ') + ' dashboard.';
+    
     var createSection = document.getElementById('createJobSection');
-    var jobsSection = document.getElementById('jobsSection');
-    var applicationsSection = document.getElementById('applicationsSection');
-    var adminSummarySection = document.getElementById('adminSummarySection');
-    var adminJobsSection = document.getElementById('adminJobsSection');
-    var adminUsersSection = document.getElementById('adminUsersSection');
+    var jobsTabBtn = document.getElementById('jobsTabBtn');
+    var adminSection = document.getElementById('adminSection');
+    var seekerQuickActions = document.getElementById('seekerQuickActions');
+    var employerQuickActions = document.getElementById('employerQuickActions');
+    var defaultTabsCard = document.getElementById('defaultTabsCard');
+
+    // Initialize admin tabs if they exist
+    document.querySelectorAll('#adminTabs .tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#adminTabs .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('#adminSection .tab-panel').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+      });
+    });
 
     if (user.role === 'employer') {
-      createSection.style.display = 'block';
-      jobsSection.style.display = 'block';
-      applicationsSection.style.display = 'block';
+      if (createSection) createSection.classList.remove('hidden');
+      if (jobsTabBtn) jobsTabBtn.style.display = '';
+      if (adminSection) adminSection.classList.add('hidden');
+      if (seekerQuickActions) seekerQuickActions.classList.add('hidden');
+      if (employerQuickActions) employerQuickActions.classList.remove('hidden');
+      if (defaultTabsCard) defaultTabsCard.style.display = '';
       loadEmployerJobs();
       loadApplications();
+      initCreateJob();
     } else if (user.role === 'job_seeker') {
-      createSection.style.display = 'none';
-      jobsSection.style.display = 'none';
-      applicationsSection.style.display = 'block';
+      if (createSection) createSection.classList.add('hidden');
+      if (jobsTabBtn) jobsTabBtn.style.display = 'none';
+      if (adminSection) adminSection.classList.add('hidden');
+      if (seekerQuickActions) seekerQuickActions.classList.remove('hidden');
+      if (employerQuickActions) employerQuickActions.classList.add('hidden');
+      if (defaultTabsCard) defaultTabsCard.style.display = '';
       loadApplications();
-    } else {
-      createSection.style.display = 'none';
-      jobsSection.style.display = 'none';
-      applicationsSection.style.display = 'none';
-    }
-
-    if (user.role === 'admin') {
-      adminSummarySection.style.display = 'block';
-      adminJobsSection.style.display = 'block';
-      adminUsersSection.style.display = 'block';
+    } else if (user.role === 'admin') {
+      if (createSection) createSection.classList.add('hidden');
+      if (jobsTabBtn) jobsTabBtn.style.display = 'none';
+      if (adminSection) adminSection.classList.remove('hidden');
+      if (seekerQuickActions) seekerQuickActions.classList.add('hidden');
+      if (employerQuickActions) employerQuickActions.classList.add('hidden');
+      if (defaultTabsCard) defaultTabsCard.style.display = 'none';
+      
       loadAdminStats();
-      loadAdminJobs();
       loadAdminUsers();
+      loadAdminJobs();
     }
-
-    initCreateJob();
   });
 })();
