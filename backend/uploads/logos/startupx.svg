@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-  <rect width="200" height="200" fill="#7c3aed"/>
-  <polygon points="100,40 140,100 100,90 60,100" fill="white"/>
-  <text x="100" y="140" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">STARTUP</text>
-  <text x="100" y="165" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#fbbf24" text-anchor="middle">X</text>
-</svg>

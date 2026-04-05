@@ -3,19 +3,24 @@
 .env.local
 .env.*.local
 
-# Upload directories
+# Upload directories - ignore all uploaded files, keep folder structure
 backend/uploads/*
 !backend/uploads/.gitkeep
 !backend/uploads/resumes/
+!backend/uploads/profiles/
+!backend/uploads/logos/
+
+# Resumes (PDF, DOC, DOCX)
 backend/uploads/resumes/*
 !backend/uploads/resumes/.gitkeep
-!backend/uploads/profiles/
+
+# Profile images (JPG, JPEG, PNG, GIF)
 backend/uploads/profiles/*
 !backend/uploads/profiles/.gitkeep
-!backend/uploads/logos/
+
+# Company logos (SVG, PNG, JPG, etc.)
 backend/uploads/logos/*
 !backend/uploads/logos/.gitkeep
-!backend/uploads/logos/*.svg
 
 # Logs
 backend/logs/*
