@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0d9488"/>
+  <circle cx="100" cy="80" r="35" fill="none" stroke="white" stroke-width="4"/>
+  <ellipse cx="100" cy="80" rx="35" ry="15" fill="none" stroke="white" stroke-width="2"/>
+  <line x1="100" y1="45" x2="100" y2="115" stroke="white" stroke-width="2"/>
+  <text x="100" y="150" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">GLOBALSOFT</text>
+</svg>

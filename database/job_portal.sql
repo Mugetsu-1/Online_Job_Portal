@@ -184,57 +184,203 @@ CREATE TRIGGER update_applications_count
     FOR EACH ROW
     EXECUTE FUNCTION update_job_application_count();
 
--- Insert sample data
--- Demo accounts use password: Pass@1234
+-- Insert admin user
+-- Admin account uses password: Admin123!
 INSERT INTO users (email, password_hash, role, full_name, phone, company_name, company_description) VALUES
-('employer@example.com', '$2b$12$3PGD0Jqp74MLeEgb80L1Xeo7THB.SPF1nSGt4zL7GB4mhxdQHygfm', 'employer', 'Tech Corp HR', '9841123456', 'Tech Corp', 'Leading technology company'),
-('admin@example.com', '$2b$12$3PGD0Jqp74MLeEgb80L1Xeo7THB.SPF1nSGt4zL7GB4mhxdQHygfm', 'admin', 'Admin User', '9746123456', NULL, NULL);
+('admin@example.com', '$2y$10$/kTcvqR6trBROQLRZI25cuylnyBoBhL9rTLvNphYhoWH9OAMyxIY6', 'admin', 'System Administrator', '9746123456', NULL, NULL);
 
-INSERT INTO users (email, password_hash, role, full_name, phone, skills, experience_years, education) VALUES
-('jobseeker@example.com', '$2b$12$3PGD0Jqp74MLeEgb80L1Xeo7THB.SPF1nSGt4zL7GB4mhxdQHygfm', 'job_seeker', 'John Doe', '9841000001', 'PHP, JavaScript, PostgreSQL', 3, 'Bachelor in Computer Science');
+-- Insert sample employer for demo jobs (id=2)
+INSERT INTO users (email, password_hash, role, full_name, phone, company_name, company_description, company_logo) VALUES
+('techcorp@demo.local', '$2y$10$/kTcvqR6trBROQLRZI25cuylnyBoBhL9rTLvNphYhoWH9OAMyxIY6', 'employer', 'Tech Corp HR', '9841123456', 'Tech Corp Solutions', 'A leading technology company specializing in software development and IT consulting.', 'logos/techcorp.svg'),
+('globalsoft@demo.local', '$2y$10$/kTcvqR6trBROQLRZI25cuylnyBoBhL9rTLvNphYhoWH9OAMyxIY6', 'employer', 'GlobalSoft Hiring', '9841234567', 'GlobalSoft Inc', 'Global software company providing enterprise solutions worldwide.', 'logos/globalsoft.svg'),
+('startupx@demo.local', '$2y$10$/kTcvqR6trBROQLRZI25cuylnyBoBhL9rTLvNphYhoWH9OAMyxIY6', 'employer', 'StartupX Founder', '9841345678', 'StartupX', 'Innovative startup focused on AI and machine learning solutions.', 'logos/startupx.svg');
 
+-- Insert hardcoded sample jobs
 INSERT INTO jobs (
     employer_id, title, description, requirements, responsibilities, job_type, location,
     salary_min, salary_max, salary_currency, experience_required, education_required,
     skills_required, application_deadline, positions_available, is_active
 ) VALUES
+-- Tech Corp Jobs
 (
-    1,
-    'Junior PHP Developer',
-    'Build and maintain backend features for the local job portal project.',
-    'Basic PHP and PostgreSQL knowledge. Comfortable reading existing code.',
-    'Implement endpoints, test features, and fix bugs reported by the team.',
+    2,
+    'Senior PHP Developer',
+    'We are looking for an experienced PHP Developer to join our backend team. You will work on building scalable web applications and APIs using modern PHP frameworks.',
+    'Strong PHP (Laravel/Symfony), MySQL/PostgreSQL, REST APIs, Git, 5+ years experience',
+    'Design and implement backend features, code reviews, mentor junior developers, optimize database queries, ensure code quality',
     'full_time',
     'Kathmandu',
-    40000,
-    65000,
+    80000,
+    120000,
     'NPR',
-    1,
-    'Bachelor in Computer Science',
-    'PHP, PostgreSQL, JavaScript',
-    CURRENT_DATE + 30,
+    5,
+    'Bachelor in Computer Science or equivalent',
+    'PHP, Laravel, PostgreSQL, REST APIs, Git',
+    CURRENT_DATE + 45,
     2,
     true
 ),
 (
+    2,
+    'Junior Frontend Developer',
+    'Join our UI team to build responsive and user-friendly web interfaces. Great opportunity for recent graduates to grow their skills.',
+    'HTML, CSS, JavaScript basics, React or Vue knowledge is a plus, eager to learn',
+    'Implement UI designs, fix frontend bugs, collaborate with designers, write clean maintainable code',
+    'full_time',
+    'Kathmandu',
+    35000,
+    50000,
+    'NPR',
     1,
-    'UI/UX Intern',
-    'Support frontend improvements for the portal and prepare simple interface updates.',
-    'Basic understanding of HTML, CSS, and design tools.',
-    'Assist with interface tweaks, feedback collection, and page cleanup.',
-    'internship',
+    'Bachelor degree in IT or related field',
+    'HTML, CSS, JavaScript, React',
+    CURRENT_DATE + 30,
+    3,
+    true
+),
+(
+    2,
+    'DevOps Engineer',
+    'Seeking a DevOps Engineer to manage our cloud infrastructure and CI/CD pipelines. Remote-friendly position.',
+    'Linux administration, Docker, Kubernetes, AWS/GCP, CI/CD tools (Jenkins/GitLab CI), scripting',
+    'Manage cloud infrastructure, implement CI/CD pipelines, monitor system performance, ensure security best practices',
+    'remote',
+    'Remote',
+    100000,
+    150000,
+    'NPR',
+    3,
+    'Bachelor in Computer Science or equivalent',
+    'Docker, Kubernetes, AWS, Linux, CI/CD',
+    CURRENT_DATE + 60,
+    1,
+    true
+),
+-- GlobalSoft Jobs
+(
+    3,
+    'Full Stack Developer',
+    'GlobalSoft is hiring Full Stack Developers to work on enterprise web applications. You will work with both frontend and backend technologies.',
+    'JavaScript/TypeScript, Node.js, React/Angular, SQL databases, 3+ years experience',
+    'Develop full stack features, integrate third-party APIs, participate in agile sprints, write unit tests',
+    'full_time',
     'Lalitpur',
+    70000,
+    100000,
+    'NPR',
+    3,
+    'Bachelor in Computer Science',
+    'JavaScript, Node.js, React, PostgreSQL',
+    CURRENT_DATE + 40,
+    2,
+    true
+),
+(
+    3,
+    'QA Engineer',
+    'We need a detail-oriented QA Engineer to ensure the quality of our software products through manual and automated testing.',
+    'Manual testing experience, automation tools (Selenium/Cypress), API testing, bug tracking',
+    'Create test plans, execute test cases, report bugs, develop automated tests, perform regression testing',
+    'full_time',
+    'Lalitpur',
+    45000,
+    65000,
+    'NPR',
+    2,
+    'Bachelor degree in IT',
+    'Selenium, Cypress, Postman, JIRA',
+    CURRENT_DATE + 35,
+    2,
+    true
+),
+(
+    3,
+    'Database Administrator',
+    'Looking for an experienced DBA to manage and optimize our PostgreSQL and MySQL databases.',
+    'PostgreSQL, MySQL, database optimization, backup/recovery, replication, 4+ years experience',
+    'Manage database servers, optimize queries, implement backup strategies, ensure data security, capacity planning',
+    'full_time',
+    'Bhaktapur',
+    90000,
+    130000,
+    'NPR',
+    4,
+    'Bachelor in Computer Science or equivalent',
+    'PostgreSQL, MySQL, Database optimization, Linux',
+    CURRENT_DATE + 50,
+    1,
+    true
+),
+-- StartupX Jobs
+(
+    4,
+    'Machine Learning Engineer',
+    'StartupX is building cutting-edge AI products. Join us to develop and deploy machine learning models that solve real-world problems.',
+    'Python, TensorFlow/PyTorch, ML algorithms, data preprocessing, model deployment experience',
+    'Develop ML models, process large datasets, deploy models to production, collaborate with data scientists',
+    'full_time',
+    'Kathmandu',
+    120000,
+    180000,
+    'NPR',
+    3,
+    'Master in Computer Science/AI or equivalent',
+    'Python, TensorFlow, PyTorch, ML, Deep Learning',
+    CURRENT_DATE + 55,
+    2,
+    true
+),
+(
+    4,
+    'UI/UX Design Intern',
+    'Great opportunity for design students to gain hands-on experience in product design at a fast-paced startup.',
+    'Basic Figma/Sketch skills, understanding of UI/UX principles, portfolio of design work',
+    'Create wireframes and mockups, conduct user research, assist with design system, prototype features',
+    'internship',
+    'Kathmandu',
     15000,
-    20000,
+    25000,
     'NPR',
     0,
-    'Undergraduate student',
-    'Figma, HTML, CSS',
+    'Pursuing degree in Design or related field',
+    'Figma, Sketch, Adobe XD, UI/UX Design',
+    CURRENT_DATE + 25,
+    2,
+    true
+),
+(
+    4,
+    'Backend Developer (Part-time)',
+    'We are looking for a part-time backend developer to help build our API infrastructure. Flexible hours, ideal for students.',
+    'Python or Node.js, REST APIs, basic database knowledge',
+    'Develop API endpoints, write documentation, fix bugs, participate in code reviews',
+    'part_time',
+    'Remote',
+    25000,
+    40000,
+    'NPR',
+    1,
+    'Pursuing Bachelor in Computer Science',
+    'Python, Node.js, REST APIs, Git',
+    CURRENT_DATE + 30,
+    1,
+    true
+),
+(
+    4,
+    'Data Analyst (Contract)',
+    'Short-term contract position for a data analyst to help with our analytics platform development.',
+    'SQL, Python, data visualization tools (Tableau/PowerBI), statistics',
+    'Analyze datasets, create dashboards, prepare reports, identify trends and insights',
+    'contract',
+    'Lalitpur',
+    60000,
+    80000,
+    'NPR',
+    2,
+    'Bachelor in Statistics/Computer Science',
+    'SQL, Python, Tableau, Excel, Statistics',
     CURRENT_DATE + 20,
     1,
-    false
+    true
 );
-
-INSERT INTO applications (job_id, applicant_id, cover_letter, status)
-VALUES
-(1, 3, 'I have experience with PHP and PostgreSQL and would like to contribute to this project.', 'pending');

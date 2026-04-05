@@ -1,7 +1,8 @@
 # Online Job Portal
 
-A simple job portal built with static frontend pages, a PHP backend, and PostgreSQL. This version is meant to run locally on Apache/XAMPP and stores uploaded files on the local filesystem.It supports job seekers, employers, and admins. Users can register, log in, browse jobs, apply for jobs,
-manage profiles, and administer platform data through backend APIs and database tables.
+A simple job portal built with static frontend pages, a PHP backend, and PostgreSQL. This version is meant to run locally on Apache/XAMPP and stores uploaded files on the local filesystem.
+
+Users can register, log in, browse jobs, apply for jobs, manage profiles, and administer platform data through backend APIs and database tables.
 
 It supports three roles:
 
@@ -30,12 +31,15 @@ OnlineWebPortal/
 │   ├── applications/
 │   ├── users/
 │   ├── config/
-│   ├── uploads/
+│   ├── uploads/           # User uploads (logos, profiles, resumes)
+│   │   ├── logos/         # Company logo images
+│   │   ├── profiles/      # User profile pictures
+│   │   └── resumes/       # Uploaded resume files
 │   └── logs/
 ├── database/
 │   └── job_portal.sql
 ├── README.md
-└── PROJECT_DOCUMENTATION.md
+└── LICENSE
 ```
 
 ## Local Setup
@@ -43,22 +47,42 @@ OnlineWebPortal/
 1. Place the project inside `C:\xampp\htdocs\OnlineWebPortal`.
 2. Enable `pdo_pgsql` and `pgsql` in XAMPP PHP.
 3. Create a PostgreSQL database named `job_portal`.
-4. Import [job_portal.sql](/d:/OnlineWebPortal/database/job_portal.sql).
-5. Update the database settings in [db.php](/d:/OnlineWebPortal/backend/config/db.php) if your local PostgreSQL username or password is different.
+4. Import [job_portal.sql](database/job_portal.sql).
+5. Update the database settings in [db.php](backend/config/db.php) if your local PostgreSQL username or password is different.
 6. Start Apache from XAMPP.
 7. Open `http://localhost/OnlineWebPortal/frontend/index.html`.
 
-## Demo Accounts
+## Admin Account
 
-- `admin@example.com` / `Pass@1234`
-- `employer@example.com` / `Pass@1234`
-- `jobseeker@example.com` / `Pass@1234`
+- **Email:** `admin@example.com`
+- **Password:** `Admin123!`
+
+## Sample Data
+
+The database includes pre-configured sample data for demonstration:
+
+- **3 Demo Employers** (internal accounts for job listings)
+  - Tech Corp Solutions
+  - GlobalSoft Inc
+  - StartupX
+- **10 Sample Jobs** across various categories:
+  - Senior PHP Developer (Full-time)
+  - Junior Frontend Developer (Full-time)
+  - DevOps Engineer (Remote)
+  - Full Stack Developer (Full-time)
+  - QA Engineer (Full-time)
+  - Database Administrator (Full-time)
+  - Machine Learning Engineer (Full-time)
+  - UI/UX Design Intern (Internship)
+  - Backend Developer (Part-time)
+  - Data Analyst (Contract)
 
 ## Notes
 
 - Uploaded resumes, profile pictures, and logos are stored under `backend/uploads/`.
-- Database settings are currently configured directly in [db.php](/d:/OnlineWebPortal/backend/config/db.php).
-- The main database schema and sample data are in [job_portal.sql](/d:/OnlineWebPortal/database/job_portal.sql).
+- Company logos for sample employers are located in `backend/uploads/logos/`.
+- Database settings are configured in [db.php](backend/config/db.php).
+- The main database schema and sample data are in [job_portal.sql](database/job_portal.sql).
 
 ## License
 
