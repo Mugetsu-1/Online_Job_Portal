@@ -34,7 +34,6 @@ function buildNav() {
 function getUser() {
   try { return JSON.parse(localStorage.getItem('jp_user')); } catch { return null; }
 }
-function getToken() { return localStorage.getItem('portal_token'); }
 
 function portalLogout() {
   localStorage.removeItem('jp_user');
