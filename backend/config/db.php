@@ -15,7 +15,7 @@ define('DB_HOST', 'localhost');
 define('DB_PORT', '5432');
 define('DB_NAME', 'job_portal');
 define('DB_USER', 'postgres');
-define('DB_PASSWORD', 'ello123');
+define('DB_PASSWORD', '');
 define('BASE_URL', 'http://localhost/OnlineWebPortal');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('APP_LOG_FILE', __DIR__ . '/../logs/app.log');
