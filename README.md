@@ -80,7 +80,7 @@ The database includes pre-configured sample data for demonstration:
 ## Notes
 
 - Uploaded resumes, profile pictures, and logos are stored under `backend/uploads/`.
-- Company logos for sample employers are located in `backend/uploads/logos/`.
+- All uploaded files are gitignored - only folder structure with `.gitkeep` files is tracked.
 - Database settings are configured in [db.php](backend/config/db.php).
 - The main database schema and sample data are in [job_portal.sql](database/job_portal.sql).
 

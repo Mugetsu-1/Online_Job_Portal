@@ -45,7 +45,8 @@ try {
     $count_sql = "SELECT COUNT(*) as total FROM jobs j WHERE $where_sql";
     $stmt = $db->prepare($count_sql);
     $stmt->execute($params);
-    $total = (int)$stmt->fetch()['total'];
+    $row = $stmt->fetch();
+    $total = $row ? (int)$row['total'] : 0;
 
     $params[] = $limit;
     $params[] = $offset;

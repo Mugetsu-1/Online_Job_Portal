@@ -243,10 +243,12 @@
     if (jobId) {
       JobPortalAPI.getJobDetails(jobId)
         .then(function (res) {
-          document.getElementById('jobSummary').innerHTML = '<strong>' + JobPortalCommon.escapeHtml(res.data.title) + '</strong> at ' + JobPortalCommon.escapeHtml(res.data.company_name || 'Company');
+          var panel = document.getElementById('jobSummaryPanel');
+          if (panel) panel.innerHTML = '<strong>' + JobPortalCommon.escapeHtml(res.data.title) + '</strong> at ' + JobPortalCommon.escapeHtml(res.data.company_name || 'Company');
         })
         .catch(function () {
-          document.getElementById('jobSummary').textContent = 'Unable to load job summary';
+          var panel = document.getElementById('jobSummaryPanel');
+          if (panel) panel.textContent = 'Unable to load job summary';
         });
     }
 

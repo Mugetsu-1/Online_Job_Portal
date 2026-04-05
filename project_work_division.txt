@@ -13,6 +13,7 @@ Main files handled:
 - frontend/portal-common.js
 - assets/js/common.js
 - assets/js/jobs.js
+- assets/js/api.js
 
 Team Member 2 - Frontend
 Work completed:

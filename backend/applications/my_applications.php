@@ -21,7 +21,8 @@ try {
         $count_sql = "SELECT COUNT(*) as total FROM applications a WHERE $where_sql";
         $stmt = $db->prepare($count_sql);
         $stmt->execute($params);
-        $total = $stmt->fetch()['total'];
+        $row = $stmt->fetch();
+        $total = $row ? (int)$row['total'] : 0;
         $sql = "SELECT a.id, a.job_id, a.status, a.cover_letter, a.resume_path, a.applied_at, a.reviewed_at, a.updated_at, j.title as job_title, j.location, j.job_type, j.salary_min, j.salary_max, j.salary_currency, u.company_name, u.company_logo FROM applications a JOIN jobs j ON a.job_id = j.id JOIN users u ON j.employer_id = u.id WHERE $where_sql ORDER BY a.applied_at DESC LIMIT ? OFFSET ?";
     } else if ($_SESSION['role'] === 'employer') {
         $where_clauses = ["j.employer_id = ?"];
@@ -34,7 +35,8 @@ try {
         $count_sql = "SELECT COUNT(*) as total FROM applications a JOIN jobs j ON a.job_id = j.id WHERE $where_sql";
         $stmt = $db->prepare($count_sql);
         $stmt->execute($params);
-        $total = $stmt->fetch()['total'];
+        $row = $stmt->fetch();
+        $total = $row ? (int)$row['total'] : 0;
         $sql = "SELECT a.id, a.job_id, a.applicant_id, a.status, a.cover_letter, a.resume_path, a.applied_at, a.reviewed_at, a.updated_at, a.notes, j.title as job_title, u.full_name as applicant_name, u.email as applicant_email, u.phone as applicant_phone, u.skills as applicant_skills, u.experience_years, u.education, u.profile_picture FROM applications a JOIN jobs j ON a.job_id = j.id JOIN users u ON a.applicant_id = u.id WHERE $where_sql ORDER BY a.applied_at DESC LIMIT ? OFFSET ?";
     } else {
         throw new Exception("Invalid user role");
