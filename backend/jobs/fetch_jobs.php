@@ -16,6 +16,9 @@ try {
     $where = ["j.is_active = true"];
     $params = [];
 
+    // Hide jobs where all positions are filled (accepted applications >= positions_available)
+    $where[] = "(j.positions_available > (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id AND a.status = 'accepted'))";
+
     if ($search) {
         $where[] = "(to_tsvector('english', j.title || ' ' || j.description) @@ plainto_tsquery('english', ?))";
         $params[] = $search;

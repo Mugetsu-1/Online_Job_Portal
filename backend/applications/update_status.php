@@ -20,9 +20,10 @@ try {
     $application_id = (int)$data['application_id'];
 
     $db = getDB();
-    $stmt = $db->prepare("SELECT a.id FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.id = ? AND j.employer_id = ?");
+    $stmt = $db->prepare("SELECT a.id, a.job_id FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.id = ? AND j.employer_id = ?");
     $stmt->execute([$application_id, $_SESSION['user_id']]);
-    if (!$stmt->fetch()) {
+    $app = $stmt->fetch();
+    if (!$app) {
         http_response_code(404);
         throw new Exception("Application not found or you don't have permission");
     }
@@ -31,6 +32,11 @@ try {
     $stmt->execute([$status, $notes, $status, $application_id]);
     $result = $stmt->fetch();
     auditLog('application.status.updated', 'application', $application_id, ['status' => $status]);
+
+    // If status is 'accepted', check if all positions are now filled
+    // If so, the job will be automatically hidden from public job listings
+    // (handled by fetch_jobs.php query which checks accepted_count >= positions_available)
+    // No need to explicitly deactivate the job - it stays active but hidden from public
 
     echo json_encode([
         'success' => true,

@@ -8,7 +8,15 @@ try {
     }
 
     $db = getDB();
-    $stmt = $db->prepare("SELECT j.*, u.company_name, u.company_website, u.company_logo, u.company_description FROM jobs j JOIN users u ON j.employer_id = u.id WHERE j.id = ? AND j.is_active = true");
+    
+    // Check if job exists and is active, also check if positions are still available
+    $stmt = $db->prepare("
+        SELECT j.*, u.company_name, u.company_website, u.company_logo, u.company_description,
+               (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id AND a.status = 'accepted') as accepted_count
+        FROM jobs j 
+        JOIN users u ON j.employer_id = u.id 
+        WHERE j.id = ? AND j.is_active = true
+    ");
     $stmt->execute([$job_id]);
     $job = $stmt->fetch();
 
@@ -17,9 +25,18 @@ try {
         throw new Exception("Job not found");
     }
 
+    // Check if all positions are filled
+    if ((int)$job['accepted_count'] >= (int)$job['positions_available']) {
+        http_response_code(404);
+        throw new Exception("This position has been filled");
+    }
+
     $stmt = $db->prepare("UPDATE jobs SET views_count = views_count + 1 WHERE id = ?");
     $stmt->execute([$job_id]);
 
+    // Remove internal count before returning
+    unset($job['accepted_count']);
+    
     $job['views_count'] = (int)$job['views_count'] + 1;
     $job['applications_count'] = (int)$job['applications_count'];
     $job['created_at'] = date('Y-m-d H:i:s', strtotime($job['created_at']));

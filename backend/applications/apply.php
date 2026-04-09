@@ -23,7 +23,11 @@ try {
     }
 
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, positions_available, application_deadline FROM jobs WHERE id = ? AND is_active = true");
+    $stmt = $db->prepare("
+        SELECT j.id, j.positions_available, j.application_deadline,
+               (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id AND a.status = 'accepted') as accepted_count
+        FROM jobs j WHERE j.id = ? AND j.is_active = true
+    ");
     $stmt->execute([$job_id]);
     $job = $stmt->fetch();
     if (!$job) {
@@ -32,6 +36,10 @@ try {
     }
     if ($job['application_deadline'] && strtotime($job['application_deadline']) < time()) {
         throw new Exception("Application deadline has passed");
+    }
+    // Check if all positions are already filled
+    if ((int)$job['accepted_count'] >= (int)$job['positions_available']) {
+        throw new Exception("This position has been filled");
     }
 
     $stmt = $db->prepare("SELECT id FROM applications WHERE job_id = ? AND applicant_id = ?");
