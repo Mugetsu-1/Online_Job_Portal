@@ -26,7 +26,7 @@ try {
     }
 
     if (!$user['is_active']) {
-        api_error('Account is deactivated. Please contact support.', 403, 'ACCOUNT_INACTIVE');
+        api_error('Your account has been removed. Please register for a new account.', 403, 'ACCOUNT_REMOVED');
     }
 
     session_regenerate_id(true);

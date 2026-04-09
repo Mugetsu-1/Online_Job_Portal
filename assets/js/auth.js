@@ -8,6 +8,11 @@
     return /^(?:9841|9746)\d{6}$/.test(phone);
   }
 
+  function isValidGmailEmail(email) {
+    if (!email) return false;
+    return /^[^\s@]+@gmail\.com$/i.test(email);
+  }
+
   function initLogin() {
     var form = document.getElementById('loginForm');
     if (!form) return;
@@ -83,9 +88,14 @@
         JobPortalCommon.showAlert('#authAlert', 'Phone must be 10 digits and start with 9841 or 9746.', 'danger');
         return;
       }
+      var email = document.getElementById('email').value.trim();
+      if (!isValidGmailEmail(email)) {
+        JobPortalCommon.showAlert('#authAlert', 'Email must be a valid @gmail.com address.', 'danger');
+        return;
+      }
       var role = roleSelect.value;
       var payload = {
-        email: document.getElementById('email').value.trim(),
+        email: email,
         password: password,
         full_name: document.getElementById('full_name').value.trim(),
         phone: phone,

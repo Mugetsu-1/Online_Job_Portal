@@ -20,6 +20,10 @@ try {
         api_error('Valid email is required', 400, 'VALIDATION_ERROR');
     }
 
+    if (!preg_match('/^[^\s@]+@gmail\.com$/i', $email)) {
+        api_error('Email must be a valid email address', 400, 'VALIDATION_ERROR');
+    }
+
     if ($full_name === '') {
         api_error('Full name is required', 400, 'VALIDATION_ERROR');
     }
@@ -63,6 +67,8 @@ try {
     api_success('Registration successful', $user, 201);
 
 } catch (Throwable $e) {
-    api_error('Unexpected server error', 500, 'SERVER_ERROR');
+    logServerEvent('error', 'register_exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+    $message = APP_DEBUG ? $e->getMessage() : 'Unexpected server error';
+    api_error($message, 500, 'SERVER_ERROR');
 }
 ?>
