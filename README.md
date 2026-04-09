@@ -52,15 +52,11 @@ OnlineWebPortal/
 6. Start Apache from XAMPP.
 7. Open `http://localhost/OnlineWebPortal/frontend/index.html`.
 
-## Admin Account
-
-- **Email:** `admin@example.com`
-- **Password:** `Admin123!`
-
 ## Sample Data
 
 The database includes pre-configured sample data for demonstration:
 
+- **Admin Account** - Preconfigured for platform management
 - **3 Demo Employers** (internal accounts for job listings)
   - Tech Corp Solutions
   - GlobalSoft Inc

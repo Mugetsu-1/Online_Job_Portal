@@ -184,12 +184,11 @@ CREATE TRIGGER update_applications_count
     FOR EACH ROW
     EXECUTE FUNCTION update_job_application_count();
 
--- Insert admin user
--- Admin account uses password: Admin123!
+-- Insert admin user (preconfigured for platform management)
 INSERT INTO users (email, password_hash, role, full_name, phone, company_name, company_description) VALUES
 ('admin@example.com', '$2y$10$/kTcvqR6trBROQLRZI25cuylnyBoBhL9rTLvNphYhoWH9OAMyxIY6', 'admin', 'System Administrator', '9746123456', NULL, NULL);
 
--- Insert sample employer for demo jobs (id=2)
+-- Insert sample employers for demo jobs
 INSERT INTO users (email, password_hash, role, full_name, phone, company_name, company_description, company_logo) VALUES
 ('techcorp@demo.local', '$2y$10$/kTcvqR6trBROQLRZI25cuylnyBoBhL9rTLvNphYhoWH9OAMyxIY6', 'employer', 'Tech Corp HR', '9841123456', 'Tech Corp Solutions', 'A leading technology company specializing in software development and IT consulting.', 'logos/techcorp.svg'),
 ('globalsoft@demo.local', '$2y$10$/kTcvqR6trBROQLRZI25cuylnyBoBhL9rTLvNphYhoWH9OAMyxIY6', 'employer', 'GlobalSoft Hiring', '9841234567', 'GlobalSoft Inc', 'Global software company providing enterprise solutions worldwide.', 'logos/globalsoft.svg'),
