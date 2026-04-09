@@ -21,8 +21,10 @@ try {
         api_error('Job not found', 404, 'NOT_FOUND');
     }
 
-    $stmt = $db->prepare("UPDATE jobs SET is_active = ? WHERE id = ? RETURNING updated_at");
-    $stmt->execute([$isActive, $jobId]);
+    // Convert boolean to string for PostgreSQL
+    $isActiveStr = $isActive ? 'true' : 'false';
+    $stmt = $db->prepare("UPDATE jobs SET is_active = $isActiveStr WHERE id = ? RETURNING updated_at");
+    $stmt->execute([$jobId]);
     $result = $stmt->fetch();
 
     auditLog('admin.job_status_updated', 'job', $jobId, ['is_active' => $isActive]);
@@ -33,6 +35,8 @@ try {
         'updated_at' => $result['updated_at'] ?? null
     ]);
 } catch (Throwable $e) {
-    api_error('Unexpected server error', 500, 'SERVER_ERROR');
+    logServerEvent('error', 'toggle_job_exception', ['error' => $e->getMessage()]);
+    $message = APP_DEBUG ? $e->getMessage() : 'Unexpected server error';
+    api_error($message, 500, 'SERVER_ERROR');
 }
 ?>

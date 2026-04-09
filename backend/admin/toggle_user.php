@@ -29,8 +29,10 @@ try {
         api_error('Admin accounts cannot be changed here', 403, 'FORBIDDEN');
     }
 
-    $stmt = $db->prepare("UPDATE users SET is_active = ? WHERE id = ? RETURNING updated_at");
-    $stmt->execute([$isActive, $userId]);
+    // Convert boolean to string for PostgreSQL
+    $isActiveStr = $isActive ? 'true' : 'false';
+    $stmt = $db->prepare("UPDATE users SET is_active = $isActiveStr WHERE id = ? RETURNING updated_at");
+    $stmt->execute([$userId]);
     $result = $stmt->fetch();
 
     auditLog('admin.user_status_updated', 'user', $userId, ['is_active' => $isActive]);
@@ -41,6 +43,8 @@ try {
         'updated_at' => $result['updated_at'] ?? null
     ]);
 } catch (Throwable $e) {
-    api_error('Unexpected server error', 500, 'SERVER_ERROR');
+    logServerEvent('error', 'toggle_user_exception', ['error' => $e->getMessage()]);
+    $message = APP_DEBUG ? $e->getMessage() : 'Unexpected server error';
+    api_error($message, 500, 'SERVER_ERROR');
 }
 ?>

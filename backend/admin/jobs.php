@@ -44,10 +44,12 @@ try {
             j.job_type,
             j.is_active,
             j.applications_count,
+            j.positions_available,
             j.created_at,
             j.application_deadline,
             u.full_name AS employer_name,
-            u.company_name
+            u.company_name,
+            (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id AND a.status = 'accepted') as accepted_count
         FROM jobs j
         JOIN users u ON j.employer_id = u.id
         WHERE $whereSql
@@ -61,6 +63,9 @@ try {
     foreach ($jobs as &$job) {
         $job['is_active'] = (bool)$job['is_active'];
         $job['applications_count'] = (int)$job['applications_count'];
+        $job['positions_available'] = (int)$job['positions_available'];
+        $job['accepted_count'] = (int)$job['accepted_count'];
+        $job['is_filled'] = $job['accepted_count'] >= $job['positions_available'];
         $job['created_at'] = date('Y-m-d H:i:s', strtotime($job['created_at']));
         if (!empty($job['application_deadline'])) {
             $job['application_deadline'] = date('Y-m-d', strtotime($job['application_deadline']));
